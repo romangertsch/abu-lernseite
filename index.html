@@ -457,11 +457,11 @@ function renderGrid() {
     grid.appendChild(card);
   });
 
-  // Globale Fehlertraining-Karte ganz oben
+  // Lernbooster-Karte ganz oben
   const total = totalLernbooster();
   const swCard = document.createElement('div');
   swCard.className = 'ch-card schwachstellen';
-  swCard.onclick = openGlobalFehlertraining;
+  swCard.onclick = openGlobalLernbooster;
   swCard.innerHTML = `
     <div class="ch-top"><span class="ch-emoji">💪</span><span class="ch-num">TRAINING</span></div>
     <h3>Nochmals üben</h3>
@@ -759,7 +759,7 @@ function openGlobalLernbooster() {
   lockMode('mc-flash', flashItems.length === 0);
   lockMode('mc-rep', repItems.length === 0);
   G.chapter = { id:'global-sw', emoji:'💪', color:'#f97316', title:'Nochmals üben',
-    subtitle:'Fehlertraining', flashcards:flashItems, rep:repItems, videos:[] };
+    subtitle:'Gezielt verbessern', flashcards:flashItems, rep:repItems, videos:[] };
   showScreen('screen-chapter-detail');
 }
 
