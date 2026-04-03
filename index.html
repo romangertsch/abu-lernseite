@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repetition Allgemeinbildung - Basel Stadt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0d1a; --surface:#161628; --surface2:#1f1f38;
+  --border:rgba(255,255,255,0.07); --text:#eeeeff; --text-muted:#7777aa;
+  --accent:#7c3aed; --accent-soft:rgba(124,58,237,0.15);
+  --correct:#22c55e; --wrong:#ef4444; --gold:#f59e0b;
+  --radius:16px; --radius-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque',sans-serif;}
+
+.screen{display:none;min-height:100vh;animation:fadeUp 0.35s ease;}
+.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* WELCOME */
+#screen-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(124,58,237,0.25) 0%,transparent 70%),var(--bg);}
+#screen-welcome.active{display:flex;}
+.w-badge{background:var(--accent-soft);border:1px solid rgba(124,58,237,0.3);border-radius:99px;color:#a78bfa;font-size:13px;font-weight:600;letter-spacing:.06em;padding:6px 16px;margin-bottom:28px;text-transform:uppercase;}
+.w-logo{font-size:72px;margin-bottom:20px;}
+.w-title{font-size:clamp(34px,7vw,60px);font-weight:800;line-height:1.1;margin-bottom:10px;background:linear-gradient(135deg,#fff 0%,#a78bfa 60%,#7c3aed 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.w-sub{color:var(--text-muted);font-size:17px;max-width:420px;margin-bottom:48px;line-height:1.6;}
+.w-form{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;}
+.w-form input{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:17px;padding:15px 20px;outline:none;text-align:center;transition:border-color .2s;}
+.w-form input::placeholder{color:var(--text-muted);}
+.w-form input:focus{border-color:var(--accent);}
+.w-form input.error{border-color:var(--wrong);}
+
+.btn-primary{background:var(--accent);border:none;border-radius:var(--radius);color:#fff;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:700;padding:15px 28px;transition:all .2s;}
+.btn-primary:hover{background:#6d28d9;transform:translateY(-2px);box-shadow:0 10px 28px rgba(124,58,237,.45);}
+.btn-secondary{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;padding:13px 20px;transition:all .2s;}
+.btn-secondary:hover{background:var(--surface2);}
+.btn-wrong{background:rgba(239,68,68,0.15);border:2px solid var(--wrong);border-radius:var(--radius);color:var(--wrong);cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;padding:13px 20px;transition:all .2s;}
+.btn-wrong:hover{background:rgba(239,68,68,0.25);}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:rgba(13,13,26,.9);backdrop-filter:blur(12px);}
+.back-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);cursor:pointer;font-size:15px;font-weight:600;padding:7px 13px;transition:all .2s;}
+.back-btn:hover{background:var(--surface2);}
+.topbar-name{font-weight:700;font-size:16px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.xp-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:5px 12px 5px 5px;}
+.xp-bar{width:80px;height:7px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:99px;transition:width .6s ease;}
+.xp-num{font-size:13px;color:var(--text-muted);white-space:nowrap;}
+.lv-badge{background:linear-gradient(135deg,var(--gold),#f97316);border-radius:7px;color:#000;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:800;padding:4px 9px;}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;font-size:17px;padding:7px 11px;transition:all .2s;}
+.icon-btn:hover{background:var(--surface2);color:var(--text);}
+
+/* INNER */
+#screen-chapters .inner,#screen-chapter-detail .inner,#screen-leaderboard .inner{max-width:900px;margin:0 auto;padding:28px 24px;}
+.section-title{font-size:clamp(22px,4vw,32px);font-weight:800;margin-bottom:6px;}
+.section-sub{color:var(--text-muted);font-size:15px;margin-bottom:24px;}
+.stats-row{display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 20px;flex:1;min-width:90px;text-align:center;}
+.stat-box .sn{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;}
+.stat-box .sl{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+/* CHAPTER CARDS */
+.chapters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+.ch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.ch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--cc,var(--accent));}
+.ch-card:hover{transform:translateY(-4px);border-color:var(--cc);box-shadow:0 14px 36px rgba(0,0,0,.35);}
+.ch-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ch-emoji{font-size:30px;}
+.ch-num{background:var(--surface2);border-radius:6px;font-size:11px;font-weight:700;color:var(--text-muted);padding:3px 8px;letter-spacing:.05em;}
+.ch-card h3{font-size:15px;font-weight:700;margin-bottom:5px;line-height:1.35;}
+.ch-desc{font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;}
+.prog-bar{height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:6px;}
+.prog-fill{height:100%;background:var(--cc);border-radius:99px;transition:width .5s ease;}
+.prog-label{font-size:11px;color:var(--text-muted);}
+.ch-card.schwachstellen{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);}
+.ch-card.schwachstellen::before{background:var(--wrong);}
+.ch-card.schwachstellen:hover{border-color:var(--wrong);box-shadow:0 14px 36px rgba(239,68,68,0.2);}
+.sw-count{font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:800;color:var(--wrong);margin:8px 0 4px;}
+.sw-empty{font-size:13px;color:var(--text-muted);}
+
+/* CHAPTER DETAIL */
+#screen-chapter-detail .inner{max-width:680px;}
+.ch-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;}
+.ch-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--cc,var(--accent));}
+.ch-hero .hero-emoji{font-size:52px;margin-bottom:14px;}
+.ch-hero h2{font-size:26px;font-weight:800;margin-bottom:6px;}
+.ch-hero p{color:var(--text-muted);font-size:15px;}
+
+/* VIDEO */
+.video-section{margin-bottom:20px;}
+.video-label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.video-container{width:100%;border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:16/9;}
+.video-container iframe{width:100%;height:100%;border:none;display:block;}
+
+/* MODE GRID */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.mode-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:22px 14px;cursor:pointer;text-align:center;transition:all .25s;}
+.mode-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+.mode-card .mi{font-size:38px;margin-bottom:10px;}
+.mode-card h4{font-size:14px;font-weight:700;margin-bottom:3px;}
+.mode-card p{font-size:11px;color:var(--text-muted);}
+.mode-card.locked{opacity:.4;cursor:not-allowed;}
+.mode-card.locked:hover{transform:none;border-color:var(--border);}
+
+.mini-stats{display:flex;gap:10px;}
+.ms-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;flex:1;text-align:center;}
+.ms-num{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--accent);}
+.ms-label{font-size:10px;color:var(--text-muted);margin-top:2px;}
+
+/* GAME */
+#screen-game .inner{max-width:680px;margin:0 auto;padding:28px 24px;}
+.g-score{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;}
+.g-score span{color:var(--gold);}
+.g-prog{font-size:13px;color:var(--text-muted);background:var(--surface);border-radius:99px;padding:5px 12px;}
+.streak-banner{display:none;justify-content:center;margin-bottom:16px;}
+.streak-pill{background:linear-gradient(135deg,#f97316,#ef4444);border-radius:99px;color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;padding:7px 18px;display:flex;align-items:center;gap:5px;animation:pulse 1s ease infinite alternate;}
+@keyframes pulse{from{box-shadow:0 0 0 rgba(239,68,68,.4)}to{box-shadow:0 0 16px rgba(239,68,68,.5)}}
+
+/* FLASHCARD */
+.fc-wrap{perspective:1200px;height:260px;margin-bottom:20px;cursor:pointer;}
+.fc{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);}
+.fc.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;}
+.fc-face.back{transform:rotateY(180deg);background:var(--surface2);}
+.fc-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;}
+.fc-content{font-size:clamp(16px,3vw,21px);font-weight:600;line-height:1.45;}
+.fc-hint{font-size:12px;color:var(--text-muted);margin-top:18px;}
+.fc-actions{display:flex;gap:12px;}
+.btn-nope,.btn-got{flex:1;border:none;border-radius:var(--radius);cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;padding:13px;transition:all .2s;}
+.btn-nope{background:var(--surface2);color:var(--text);}
+.btn-nope:hover{background:var(--surface);}
+.btn-got{background:var(--correct);color:#fff;}
+.btn-got:hover{background:#16a34a;transform:scale(1.02);}
+
+/* REPETITORIUM */
+.rep-question{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:16px;}
+.rep-q-text{font-size:clamp(14px,2.5vw,18px);font-weight:600;line-height:1.55;margin-bottom:20px;}
+.rep-opts{display:flex;flex-direction:column;gap:10px;}
+.rep-opt{display:flex;align-items:flex-start;gap:12px;background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;cursor:pointer;transition:all .2s;user-select:none;}
+.rep-opt:hover{border-color:var(--accent);}
+.rep-opt.selected{border-color:var(--accent);background:rgba(124,58,237,.12);}
+.rep-opt.correct-answer{border-color:var(--correct);background:rgba(34,197,94,.12);}
+.rep-opt.wrong-answer{border-color:var(--wrong);background:rgba(239,68,68,.12);}
+.rep-opt.missed{border-color:var(--gold);background:rgba(245,158,11,.12);}
+.rep-checkbox{width:20px;height:20px;min-width:20px;border:2px solid var(--text-muted);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;margin-top:1px;}
+.rep-opt.selected .rep-checkbox{background:var(--accent);border-color:var(--accent);color:#fff;}
+.rep-opt.correct-answer .rep-checkbox{background:var(--correct);border-color:var(--correct);color:#fff;}
+.rep-opt.wrong-answer .rep-checkbox{background:var(--wrong);border-color:var(--wrong);color:#fff;}
+.rep-opt-text{font-size:14px;line-height:1.45;color:var(--text);}
+.rep-submit{width:100%;padding:15px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;}
+.rep-submit:hover{background:#6d28d9;}
+.rep-submit:disabled{opacity:.5;cursor:not-allowed;}
+.rep-hint{font-size:12px;color:var(--text-muted);text-align:center;margin-top:8px;}
+
+/* RESULTS */
+#screen-results .inner{max-width:560px;margin:0 auto;padding:28px 24px;text-align:center;}
+.res-emoji{font-size:80px;margin:20px 0;}
+.res-title{font-size:36px;font-weight:800;margin-bottom:6px;}
+.res-sub{color:var(--text-muted);margin-bottom:28px;font-size:15px;}
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+.res-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 10px;}
+.res-num{font-family:'Bricolage Grotesque',sans-serif;font-size:34px;font-weight:800;margin-bottom:3px;}
+.res-lbl{font-size:11px;color:var(--text-muted);}
+.res-actions{display:flex;flex-direction:column;gap:10px;}
+
+/* LEADERBOARD */
+.lb-list{display:flex;flex-direction:column;gap:8px;margin-top:20px;}
+.lb-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;}
+.lb-entry:hover{background:var(--surface2);}
+.lb-rank{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;min-width:32px;text-align:center;}
+.lb-rank.gold{color:var(--gold)}.lb-rank.silver{color:#9ca3af}.lb-rank.bronze{color:#cd7c2c}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-weight:600;font-size:15px;}
+.lb-detail{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.lb-pts{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
+.empty{text-align:center;padding:48px;color:var(--text-muted);}
+.empty .ei{font-size:48px;margin-bottom:12px;}
+
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-70px);border-radius:var(--radius-sm);font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;padding:11px 28px;z-index:9999;pointer-events:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.ok{background:var(--correct);color:#fff;}
+#toast.bad{background:var(--wrong);color:#fff;}
+#toast.info{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:99px;}
+
+@media(max-width:520px){
+  .mode-grid{grid-template-columns:1fr;}
+  .topbar{padding:12px 16px;}
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="w-badge">📚 Allgemeinbildung · Basel · 5. Auflage</div>
+  <div class="w-logo">🎮</div>
+  <h1 class="w-title">ABU Lernplattform</h1>
+  <p class="w-sub">Gesellschaft, Sprache und Kommunikation – spielerisch lernen</p>
+  <div class="w-form">
+    <input type="text" id="name-input" placeholder="Dein Vorname..." maxlength="30" autocomplete="off" spellcheck="false">
+    <button class="btn-primary" onclick="startApp()">Loslegen 🚀</button>
+  </div>
+</div>
+
+<!-- CHAPTERS -->
+<div id="screen-chapters" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-name" id="topbar-name">👋</span>
+    </div>
+    <div class="topbar-right">
+      <div class="xp-pill">
+        <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+        <span class="xp-num" id="xp-num">0 XP</span>
+      </div>
+      <div class="lv-badge" id="lv-badge">LV 1</div>
+      <button class="icon-btn" onclick="showLeaderboard()">🏆</button>
+    </div>
+  </div>
+  <div class="inner">
+    <h2 class="section-title">Alle Kapitel</h2>
+    <p class="section-sub">Wähle ein Kapitel und starte dein Training</p>
+    <div class="stats-row">
+      <div class="stat-box"><div class="sn" id="s-xp">0</div><div class="sl">Gesamt-XP</div></div>
+      <div class="stat-box"><div class="sn" id="s-done">0</div><div class="sl">Kapitel geübt</div></div>
+      <div class="stat-box"><div class="sn" id="s-streak">0</div><div class="sl">🔥 Bester Streak</div></div>
+      <div class="stat-box"><div class="sn" id="s-games">0</div><div class="sl">Runden gespielt</div></div>
+    </div>
+    <div class="chapters-grid" id="chapters-grid"></div>
+  </div>
+</div>
+
+<!-- CHAPTER DETAIL -->
+<div id="screen-chapter-detail" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showChapters()">← Übersicht</button>
+    <div class="topbar-right">
+      <span class="xp-num" id="det-xp">0 XP</span>
+      <div class="lv-badge" id="det-lv">LV 1</div>
+    </div>
+  </div>
+  <div class="inner">
+    <div class="ch-hero" id="ch-hero">
+      <div class="hero-emoji" id="det-emoji"></div>
+      <h2 id="det-title"></h2>
+      <p id="det-sub"></p>
+    </div>
+
+    <div id="det-video-placeholder"></div>
+
+    <div class="mode-grid">
+      <div class="mode-card" id="mc-flash" onclick="startMode('flashcard')">
+        <div class="mi">🃏</div>
+        <h4>Lernkarten</h4>
+        <p>Begriffe &amp; Definitionen</p>
+      </div>
+      <div class="mode-card" id="mc-rep" onclick="startMode('rep')">
+        <div class="mi">🎓</div>
+        <h4>Repetitorium</h4>
+        <p>Mehrere Antworten möglich</p>
+      </div>
+    </div>
+    <div class="mode-card" id="mc-fehler" onclick="startFehlertraining(G.chapter.id)"
+      style="display:none;margin-bottom:18px;border-color:rgba(249,115,22,0.4);background:rgba(249,115,22,0.07)">
+      <div class="mi">🔄</div>
+      <h4>Nochmals üben</h4>
+      <p class="sw-ft-count" style="color:#f97316"></p>
+    </div>
+    <div class="mini-stats">
+      <div class="ms-box"><div class="ms-num" id="ms-f">0</div><div class="ms-label">Lernkarten</div></div>
+      <div class="ms-box"><div class="ms-num" id="ms-r">0</div><div class="ms-label">Repetitorium</div></div>
+      <div class="ms-box"><div class="ms-num" id="ms-best">–</div><div class="ms-label">Bestes Ergebnis</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="confirmQuit()">✕ Abbrechen</button>
+    <div class="g-score">⭐ <span id="live-score">0</span></div>
+    <div class="g-prog" id="g-prog">1 / 1</div>
+  </div>
+  <div class="inner">
+    <div class="streak-banner" id="streak-banner">
+      <div class="streak-pill">🔥 <span id="streak-num">0</span> Streak!</div>
+    </div>
+    <!-- FLASHCARD -->
+    <div id="mode-flashcard" style="display:none">
+      <div class="fc-wrap" onclick="flipCard()">
+        <div class="fc" id="fc">
+          <div class="fc-face front">
+            <div class="fc-tag">Begriff</div>
+            <div class="fc-content" id="fc-front"></div>
+            <div class="fc-hint">👆 Tippen zum Umdrehen</div>
+          </div>
+          <div class="fc-face back">
+            <div class="fc-tag">Erklärung</div>
+            <div class="fc-content" id="fc-back"></div>
+          </div>
+        </div>
+      </div>
+      <div id="fc-actions" style="display:none" class="fc-actions">
+        <button class="btn-nope" onclick="markCard(false)">😕 Nochmal üben</button>
+        <button class="btn-got" onclick="markCard(true)">✓ Gewusst! +5 Pkt.</button>
+      </div>
+      <p id="fc-hint-text" style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:12px;">Karte umdrehen – dann bewerten</p>
+    </div>
+    <!-- REPETITORIUM -->
+    <div id="mode-rep" style="display:none">
+      <div class="rep-question">
+        <div class="rep-q-text" id="rep-q-text"></div>
+        <div class="rep-opts" id="rep-opts"></div>
+      </div>
+      <button class="rep-submit" id="rep-submit-btn" onclick="submitRep()">Antwort prüfen ✓</button>
+      <p class="rep-hint">Mehrere Antworten können richtig sein</p>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="topbar">
+    <div></div>
+    <div class="lv-badge" id="res-lv">LV 1</div>
+  </div>
+  <div class="inner">
+    <div class="res-emoji" id="res-emoji">🎉</div>
+    <h2 class="res-title" id="res-title">Super!</h2>
+    <p class="res-sub" id="res-sub"></p>
+    <div class="res-grid">
+      <div class="res-box"><div class="res-num" id="rn-score" style="color:var(--gold)">0</div><div class="res-lbl">Punkte</div></div>
+      <div class="res-box"><div class="res-num" id="rn-correct" style="color:var(--correct)">0/0</div><div class="res-lbl">Richtig</div></div>
+      <div class="res-box"><div class="res-num" id="rn-streak" style="color:#f97316">0</div><div class="res-lbl">🔥 Streak</div></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn-primary" onclick="playAgain()">🔄 Nochmal spielen</button>
+      <button id="btn-retry-wrong" class="btn-wrong" onclick="retryWrongFromResults()" style="display:none">💪 Falsch beantwortete Fragen nochmals üben</button>
+      <button class="btn-secondary" onclick="showChapters()">📚 Kapitelübersicht</button>
+      <button class="btn-secondary" onclick="showLeaderboard()">🏆 Rangliste</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="screen-leaderboard" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showChapters()">← Zurück</button>
+    <h3 style="font-size:17px;font-weight:800;">🏆 Rangliste</h3>
+    <div></div>
+  </div>
+  <div class="inner">
+    <p class="section-sub">Beste Ergebnisse auf diesem Gerät</p>
+    <div id="lb-list" class="lb-list"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// DATEN
+// ════════════════════════════════════════════
+const CHAPTERS = [
+  { id:1, emoji:"💼", color:"#E63946", title:"Berufsleben – ein Neubeginn", subtitle:"Recht, Lehrvertrag, Verträge & Personenrecht", videos:[{title:"Erklärvideo: Berufsleben – ein Neubeginn", youtubeId:"NX_ZNYZH3S0"}], flashcards:[{"front": "Arbeitszeit", "back": "Zeit vom Beginn bis zum Ende der Arbeit. Die Länge der individuellen Arbeitszeit ist normalerweise im Arbeitsvertrag festgelegt. Höchstarbeitszeit für Jugendliche bis 18 Jahren: 9 Stunden pro Tag."}, {"front": "Brauch/Sitte", "back": "Im Laufe der Zeit entstandene Gewohnheiten, Rituale, Traditionen (z. B. Fasnacht, Ostern, Banntag)."}, {"front": "Handlungsfähigkeit", "back": "Fähigkeit, durch seine Handlungen Rechte und Pflichten zu begründen."}, {"front": "juristische Person", "back": "Verbindung von mehreren Personen, die rechtsfähig ist (z. B. Verein, Aktiengesellschaft). (Siehe auch: Aktie)"}, {"front": "Lehrvertrag", "back": "Grundlage des Lehrverhältnisses; wird zwischen Berufsbildnern, Lernenden und evtl. gesetzlichen Vertretern abgeschlossen. Der Lehrvertrag muss schriftlich sein."}, {"front": "Moral", "back": "Wertvorstellungen über das gute und gerechte Verhalten."}, {"front": "natürliche Person", "back": "Ein Mensch mit seinen Rechten und Pflichten."}, {"front": "Obligationenrecht (OR)", "back": "Gesetz, das Bestimmungen zu den verschiedenen Vertragsarten enthält (z. B. Lehrvertrag, Mietvertrag usw.)."}, {"front": "Öffentliches Recht", "back": "Teil des Rechts, in dem die Rechtsbeziehungen der Bürger zum Staat geregelt sind."}, {"front": "Privatrecht", "back": "Teil des Rechts, in dem die Rechtsbeziehungen zwischen den Bürgern geregelt sind."}, {"front": "Rechtsfähigkeit", "back": "Fähigkeit, Rechte und Pflichten zu haben. Alle Menschen sind rechtsfähig."}, {"front": "Rechtsnorm", "back": "Regel der Rechtsordnung (z. B. Bestimmungen zum Diebstahl)."}, {"front": "Rechtsordnung", "back": "System von Regeln, welches alle Rechtsnormen (z. B. Gesetze) eines Landes umfasst."}, {"front": "Strafrecht", "back": "Teil des öffentlichen Rechts, der bestimmt, welche Handlungen (z. B. Diebstahl) strafbar sind."}, {"front": "Verjährung", "back": "Zeitraum, nach dessen Ablauf eine Schuld nicht mehr eingefordert werden kann."}, {"front": "Zivilgesetzbuch", "back": "Gesetz, welches das Personen-, Familien-, Erb- und Sachenrecht regelt."}, {"front": "Deliktsfähigkeit", "back": "Begriff aus dem Personenrecht; wer urteilsfähig ist, haftet für den Schaden einer widerrechtlichen Handlung"}, {"front": "Urteilsfähigkeit", "back": "Begriff aus dem Personenrecht; Fähigkeit, vernunftgemäss zu handeln."}, {"front": "Volljährigkeit", "back": "Begriff aus dem Personenrecht; wer das 18. Altersjahr erreicht hat und nicht bevormundet ist, der ist volljährig."}], rep:[{"question": "[1] Es ist die Aufgabe des Rechts:", "options": ["Unter den Menschen geordnete Verhältnisse zu schaffen.", "Jedem zu einem günstigen Auto zu verhelfen.", "Jedem zu einer Arbeit zu verhelfen.", "Die Schwächeren zu schützen."], "correct": [0, 3]}, {"question": "[2] Beurteilen Sie die Aussagen zum Recht:", "options": ["Bestimmt die innere Einstellung/Gesinnung.", "Macht Vorschriften für das äussere Verhalten der Menschen.", "Kann vom Staat erzwungen werden.", "Kann auch mit Ethik oder Sittlichkeit gleichgesetzt werden."], "correct": [1, 2]}, {"question": "[3] Beurteilen Sie die Aussagen zum öffentlichen Recht:", "options": ["Das öffentliche Recht regelt die Rechtsbeziehungen zwischen einzelnen Privatpersonen.", "Die beteiligten Bürger sind bezüglich ihrer Rechte und Pflichten einander gleichgestellt.", "Das Allgemeininteresse steht über dem Eigeninteresse.", "Das öffentliche Recht ist z.B. in der Bundesverfassung geregelt."], "correct": [1, 2, 3]}, {"question": "[4] Beurteilen Sie die Aussagen zum Privatrecht:", "options": ["Das Privatrecht ist z.B. im Schweizerischen Strafgesetzbuch geregelt.", "Das Privatrecht regelt die Rechtsbeziehungen zwischen einzelnen Privatpersonen.", "Das Privatrecht ist im ZGB und OR geregelt.", "Die beteiligten Bürger sind bezüglich ihrer Rechte und Pflichten einander gleichgestellt."], "correct": [1, 2, 3]}, {"question": "[5] Wobei handelt es sich um einen Brauch?", "options": ["Ein Lernender parkiert im Halteverbot.", "Eine Lernende entscheidet sich von nun an kein Fleisch mehr zu essen.", "Eine Lernende schliesst einen Handyvertrag ab.", "Eine 10-Jährige verkleidet sich an der Fasnacht als Pirat."], "correct": [3]}, {"question": "[6] Welche Rechtsfälle gehören zum öffentlichen Recht?", "options": ["Ein Arbeitnehmer verlangt Lohn für geleistete Überstunden.", "Eine Staatsangestellte verlangt den gleichen Lohn wie ihre männlichen Bürokollegen.", "Ein Kunde reklamiert wegen einer mangelhaften Reparatur des Velos.", "Ein Steuerpflichtiger erhebt Einsprache gegen die Steuerveranlagung."], "correct": [1, 3]}, {"question": "[7] Handlungsfähig sein, heisst:", "options": ["Ich muss zu Hause ausziehen.", "Ich bin urteilsfähig und mündig/volljährig.", "Ich verdiene meinen eigenen Lohn.", "Ich kann alle Verträge selbstständig abschliessen."], "correct": [1, 3]}, {"question": "[8] Beurteilen Sie Aussagen zum Personenrecht (16-Jährige):", "options": ["Eine 16-Jährige ist rechtsfähig und im Normalfall urteilsfähig.", "Eine 16-Jährige ist handlungsfähig, weil sie mündig/volljährig ist.", "Eine 16-Jährige kann selbständig über ihre Religionszugehörigkeit entscheiden.", "Eine 16-Jährige kann unter Umständen schon mündig/volljährig sein."], "correct": [0, 2]}, {"question": "[9] Als juristische Person ist (sind) zu bezeichnen:", "options": ["Ein Mensch, der ein Rechtsstudium abgeschlossen hat.", "Ein von einer Gruppe Studenten neu gegründeter Verein mit schriftlichen Statuten.", "Jugendliche, die mit dem Gesetz in Konflikt gekommen sind.", "Der FC Basel."], "correct": [1, 3]}, {"question": "[10] Wobei handelt es sich um einen Zivilprozess?", "options": ["Ein Autofahrer wird wegen Unfalls mit Alkohol zu einer Geldstrafe verurteilt.", "Einsprache gegen die eigene Steuerveranlagung.", "Einsprache gegen Bauprojekt auf der Nachbarparzelle.", "Verkauf eines Autos – Käufer beanstandet Mängel und verklagt den Verkäufer."], "correct": [3]}, {"question": "[11] Beurteilen Sie die Aussagen zum Personenrecht:", "options": ["Das Personenrecht befasst sich mit natürlichen und juristischen Personen.", "Juristische Personen sind Menschen, die als Rechtsanwälte oder Juristinnen arbeiten.", "Natürliche Personen können Handlungen beurteilen und frei entscheiden. Rechte abhängig vom Alter.", "Natürliche Personen handeln durch den Verwaltungsrat oder einen Vorstand."], "correct": [0, 2]}, {"question": "[12] Beurteilen Sie die Aussagen zur Rechtsfähigkeit:", "options": ["Rechtsfähig sind alle Menschen, unabhängig von Alter, Geschlecht, Herkunft oder Geisteszustand.", "Tiere sind ebenfalls rechtsfähig.", "Die Rechtsfähigkeit ist die Fähigkeit, Rechte und Pflichten zu haben.", "Nur volljährige Personen sind rechtsfähig."], "correct": [0, 2]}, {"question": "[16] Beurteilen Sie die Aussagen über Verträge:", "options": ["Rechtsgültige Verträge müssen immer schriftlich abgefasst sein.", "Alle Verträge von Jugendlichen müssen von den Eltern unterschrieben sein.", "Die in einem formlosen Vertrag mündlich vereinbarten Rechte und Pflichten sind verbindlich.", "Ein Vertrag kann auch stillschweigend zustande kommen."], "correct": [2, 3]}, {"question": "[17] Beurteilen Sie die Aussagen zum Vertragsrecht:", "options": ["Zum Abschluss eines Vertrages ist die übereinstimmende gegenseitige Willensäusserung erforderlich.", "Alle Verträge müssen schriftlich sein, damit sie gültig sind.", "Die maximale Verjährungsfrist eines Vertrages beträgt fünf Jahre.", "Bussen im Strassenverkehr verjähren bereits nach einem Jahr."], "correct": [0]}, {"question": "[18] Wobei handelt es sich um einen formlos gültigen Vertrag?", "options": ["Einzelarbeitsvertrag", "Erbvertrag", "Lehrvertrag", "Mietvertrag für ein Auto"], "correct": [0, 3]}, {"question": "[19] Beurteilen Sie die Aussagen über den Lehrvertrag:", "options": ["Die Lehrabschlussprüfung kann beliebig oft wiederholt werden.", "Lernende müssen keine Überstundenarbeit leisten.", "Ein Lernender darf nur vom Berufsbildner selber ausgebildet werden.", "Die Probezeit dauert zwischen ein bis drei Monaten."], "correct": [3]}, {"question": "[20] Der Lehrvertrag …", "options": ["darf auch mündlich abgeschlossen werden.", "muss vom Kantonalen Amt für Berufsbildung genehmigt werden.", "beinhaltet eine Probezeit von 1 bis 3 Monaten.", "endet automatisch und eine Kündigung am Ende der Lehrzeit erübrigt sich."], "correct": [1, 2, 3]}, {"question": "[21] Beurteilen Sie die Aussagen zum Lehrvertrag (Arbeitszeit/Rechte):", "options": ["Lernende haben immer ein Anrecht auf einen 13. Monatslohn.", "Die tägliche Höchstarbeitszeit darf für Jugendliche bis 18 Jahre 9 Stunden pro Tag nicht überschreiten.", "Die Lernenden müssen sich zum Qualifikationsverfahren anmelden.", "Die Prämie für die Berufsunfallversicherung bezahlen die Lernenden."], "correct": [1]}, {"question": "[22] Welche Abmachungen stehen im Lehrvertrag?", "options": ["Probezeit", "Pflichten des Lernenden", "Lohn", "Massnahmen bei ungenügenden Leistungen"], "correct": [0, 2]}] },
+  { id:2, emoji:"🎯", color:"#F4A261", title:"Freizeit und Konsum", subtitle:"Kaufvertrag, Lohn, Budget & Bedürfnisse", flashcards:[{"front": "Bargeldloser Zahlungsverkehr", "back": "Zahlungsverkehr, in dem die Zahlungen ohne Verwendung von Bargeld abgewickelt werden (z. B. E-Banking, Lastschriftverfahren, Kreditkarte, Debit-Card)."}, {"front": "Barkauf", "back": "Kauf, bei dem sofort mit Bargeld bezahlt wird."}, {"front": "Budget", "back": "Gegenüberstellung von Ausgaben und Einnahmen."}, {"front": "Existenzbedürfnis (Grundbedürfnis)", "back": "Bedürfnis, dessen Befriedigung lebensnotwendig ist (z. B. Nahrung, Wohnung)."}, {"front": "freies Gut", "back": "Gut, welches unbeschränkt verfügbar ist und nichts kostet (z. B. Luft, Sonnenstrahlen)."}, {"front": "Investitionsgut", "back": "Gut, das für die Produktion von Konsumgütern und Dienstleistungen verwendet wird (z. B. Maschine, Arbeitswerkzeug)."}, {"front": "Kreditkauf", "back": "Kaufart, bei welcher der Käufer die Ware mit einer Rechnung erhält. Üblicherweise hat der Käufer 30 Tage Zeit, die Rechnung zu bezahlen."}, {"front": "Lieferverzug", "back": "Vertragsverletzung: Die Verkäuferin liefert die Ware zu spät."}, {"front": "Mahnung", "back": "Zahlungserinnerung, mit der der Gläubiger den Schuldner bzw. die Schuldnerin dazu auffordert, die geschuldete Leistung zu erbringen."}, {"front": "mangelhafte Lieferung", "back": "Die gelieferte Ware hat einen Fehler oder Schaden (= Mangel)."}, {"front": "Mängelrüge", "back": "Gesetzliche Garantie mit den drei Möglichkeiten: Ersatzlieferung, Minderung, Wandelung."}, {"front": "Offerte", "back": "Angebot des Verkäufers bei einem Kaufvertrag.Verbindliche Offerten: z. B. Waren in Schaufenstern, schriftliche Offerten.Unverbindliche Offerten: z. B. Inserate, Prospekte, Internet."}, {"front": "Quittung", "back": "Schriftliche Bescheinigung, dass die Schuld bezahlt ist (z. B. beim Kaufvertrag)."}, {"front": "Schulden", "back": "Geldbetrag, der zu bezahlen ist."}, {"front": "Wahlbedürfnis", "back": "Bedürfnis, dessen Befriedigung nicht lebensnotwendig ist (z. B. Schmuck, Ferien, Auto)."}, {"front": "Wirtschaftliches Gut", "back": "Gut, das beschränkt vorhanden ist und etwas kostet."}, {"front": "Wohlfahrt", "back": "Lebensqualität jeder Person (materieller Lebensstandard, Gesundheit, Gerechtigkeit, Freiheit, intakte Natur)."}, {"front": "Wohlstand", "back": "Materieller Lebensstandard, bei welchem die Bevölkerung über viele Güter und Dienstleistungen verfügt."}, {"front": "Zahlungsverzug", "back": "Vorgang bei dem der Käufer oder die Käuferin die Rechnung nicht rechtzeitig bezahlt (= Zahlungsverzug)."}], rep:[{"question": "[23] Beurteilen Sie die Aussagen zum Lohn:", "options": ["In der Lohnabrechnung werden der Brutto- und der Nettolohn ausgewiesen.", "Als Bruttolohn bezeichnet man den mit dem Arbeitgeber vereinbarten Lohn.", "Der Nettolohn ist derjenige Lohnanteil, der nach den Abzügen ausbezahlt wird.", "Abzüge vom Bruttolohn können für Versicherungsprämien vorgenommen werden."], "correct": [0, 1, 2, 3]}, {"question": "[24] Wobei handelt es sich um fixe Kosten?", "options": ["Auswärtige Verpflegung", "Handy-Prepaid-Karte", "Versicherungsprämien", "Mietzins"], "correct": [2, 3]}, {"question": "[25] Beurteilen Sie die Aussagen zum bargeldlosen Zahlungsverkehr:", "options": ["Beim Dauerauftrag vereinbart man mit der Bank, dass Rechnungen direkt bezahlt werden.", "Beim E-Banking hat der Bankkunde via Internet einen gesicherten Zugang zu seinen Konten.", "Die Mastercard ist eine sogenannte Debitkarte.", "Eine Kundenkarte hat den Nachteil, dass bei verspäteter Zahlung hohe Zinsen anfallen können."], "correct": [1, 3]}, {"question": "[26] Die folgenden Preisangaben sind für den Verkäufer grundsätzlich verbindlich:", "options": ["Preise in Prospekten und Katalogen", "Preisanschriften in Schaufenstern", "Preise in Inseraten", "Preisvereinbarungen in einem Kaufvertrag"], "correct": [1, 3]}, {"question": "[27] Sie kaufen einen Rasenmäher. Nach zwei Monaten ist er defekt. Was steht Ihnen zu?", "options": ["Ein gleichwertiger Ersatz", "Eine Reparatur des Rasenmähers", "Genugtuung", "Geld zurück"], "correct": [0, 3]}, {"question": "[28] Beurteilen Sie die Aussagen zur Offerte:", "options": ["Warenauslagen in Schaufenstern sind in jedem Fall verbindliche Offerten.", "Telefonische Offerten gelten so lange, bis das Gespräch endet.", "Unbestellte Waren sind keine gültigen Offerten.", "Schriftliche Offerten sind in der Regel 7 bis 10 Tage gültig."], "correct": [1, 2, 3]}, {"question": "[29] Ab wann ist ein Kaufvertrag rechtsgültig?", "options": ["Bei der Bestellung", "Mit der Offerte", "Nach der Lieferung", "Nach der Bezahlung"], "correct": [0]}, {"question": "[30] Durch den Kaufvertrag verpflichtet sich der Käufer …", "options": ["den Kaufgegenstand schonend zu behandeln.", "dem Verkäufer den Preis zu bezahlen.", "die Quittung zu unterzeichnen.", "den Garantieschein zu verlangen."], "correct": [1]}, {"question": "[31] Wer eine unbestellte Ware erhält, muss …", "options": ["sie sofort ohne Porto zurückschicken.", "sie frankiert zurückschicken.", "dem Absender melden, er könne die Sendung abholen.", "die Ware weder aufbewahren noch zurücksenden."], "correct": [3]}, {"question": "[32] Welche Aussagen zum Kaufvertrag sind richtig?", "options": ["Auch mündliche Kaufverträge sind verbindlich.", "Kaufverträge können stillschweigend abgeschlossen werden.", "Minderjährige können keine Kaufverträge ohne Zustimmung der Eltern abschliessen.", "Innert fünf Tagen können alle Kaufverträge rückgängig gemacht werden."], "correct": [0, 1]}, {"question": "[33] Beurteilen Sie die Aussagen zum Bar- und Kreditkauf:", "options": ["Der Barkauf ist meistens die günstigste Art, etwas zu erwerben.", "Beim Barkauf erfolgt die Übergabe von Ware und Geld gleichzeitig.", "Beim Kreditkauf wird der Käufer bei der Übergabe der Ware Eigentümer.", "Beim Kreditkauf gibt der Käufer der Verkäuferin einen Kredit."], "correct": [0, 1, 2]}, {"question": "[38] Was gehört zu den Kollektivbedürfnissen?", "options": ["Bau von Autobahnen", "Kauf eines privaten Fernsehers", "Erstellung eines Mobilfunknetzes", "Bau von Spitälern"], "correct": [0, 2, 3]}, {"question": "[39] Aufgabe der Wirtschaft ist es:", "options": ["Für mehr Freiheit zu sorgen.", "Die materiellen Bedürfnisse der Gesellschaft zu befriedigen.", "Die demokratischen Rechte der Menschen zu schützen.", "Sowohl Individual- als auch Kollektivbedürfnisse zu befriedigen."], "correct": [1, 3]}, {"question": "[40] Maslow: Wie heissen die Stufen der Bedürfnispyramide von unten nach oben?", "options": ["1. Anerkennung, 2. Sicherheit, 3. Lebenswichtiges, 4. Dazugehörigkeit, 5. Selbstverwirklichung", "1. Lebenswichtiges, 2. Dazugehörigkeit, 3. Sicherheit, 4. Selbstverwirklichung, 5. Anerkennung", "1. Sicherheit, 2. Lebenswichtiges, 3. Anerkennung, 4. Selbstverwirklichung, 5. Dazugehörigkeit", "1. Lebenswichtiges, 2. Sicherheit, 3. Dazugehörigkeit, 4. Anerkennung, 5. Selbstverwirklichung"], "correct": [3]}, {"question": "[41] Wobei handelt es sich um sogenannte Investitionsgüter?", "options": ["Privates Auto", "Arbeitswerkzeuge", "Regenwasser", "Baukran"], "correct": [1, 3]}, {"question": "[42] Beurteilen Sie die Aussagen zum Wohlstand und zur Wohlfahrt:", "options": ["Unter Wohlstand verstehen wir die Lebensqualität jeder einzelnen Person.", "Wohlstand beinhaltet die Möglichkeit, über Güter und Dienstleistungen zu verfügen.", "Die Wohlfahrt zu messen, ist schwierig.", "Das Bruttoinlandprodukt pro Kopf misst den Wohlstand der Bevölkerung."], "correct": [1, 2, 3]}, {"question": "[43] Wobei handelt es sich um sogenannte freie Güter?", "options": ["Arbeitsleistung", "Regenwasser", "Luft", "Medikamente"], "correct": [1, 2]}], videos:[] },
+  { id:3, emoji:"🌿", color:"#2A9D8F", title:"Jugend und Gesundheit", subtitle:"Gesundheit, Sucht, HIV & Krankenkasse", flashcards:[{"front": "Bisexualität", "back": "Sexuelle Orientierung, bei welcher man sich sowohl vom gleichen als auch vom anderen Geschlecht angezogen fühlt (lat. bi = zwei)."}, {"front": "Einzelabrede", "back": "Vereinbarung, welche die Versicherungsleistungen der Unfallversicherung nach dem Austritt aus dem Unternehmen verlängert (bis sechs Monate möglich)."}, {"front": "Franchise", "back": "Betrag, der bei einem Arztbesuch einmal im Jahr selbst bezahlt werden muss."}, {"front": "Geschlechtskrankheit", "back": "Krankheiten, welche hauptsächlich durch den Geschlechtsverkehr übertragen werden (z. B. Aids, Hepatitis B)."}, {"front": "Gesundheitsförderung", "back": "Massnahme, um das körperliche, soziale und geistige Wohlergehen eines Menschen zu steigern und zu stärken."}, {"front": "Heterosexualität", "back": "Sexuelle Orientierung, bei welcher man sich vom anderen Geschlecht angezogen fühlt (gr. hetero = anders)."}, {"front": "HIV", "back": "Abkürzung für den Erreger der Immunschwächekrankheit Aids (Human Immunodeficiency Virus). (Siehe auch: Geschlechtskrankheit)"}, {"front": "Homosexualität", "back": "Sexuelle Orientierung, bei welcher man sich vom gleichen Geschlecht angezogen fühlt (gr. homo = gleich)."}, {"front": "physische Abhängigkeit", "back": "Körperliche Reaktion, welche beim Absetzen von Drogen Entzugserscheinungen hervorruft. (Siehe auch: Sucht)"}, {"front": "Prämie", "back": "Beitrag, den ein Versicherter der Versicherungsgesellschaft für eine Versicherung bezahlt."}, {"front": "Prävention", "back": "Vorbeugung, um etwas Schlimmes zu verhindern."}, {"front": "psychische Abhängigkeit", "back": "Seelische Abhängigkeit von einer Droge, welche keine körperlichen Entzugserscheinungen hervorruft. (Siehe auch: Sucht)"}, {"front": "Selbstbehalt", "back": "Summe, die der Versicherte bei einem Schadenfall selbst übernehmen muss."}, {"front": "Sucht", "back": "Krankhafte Abhängigkeit von bestimmten Mitteln (z. B. Alkohol, Nikotin, Heroin usw.). (Siehe auch: psychische Abhängigkeit, physische Abhängigkeit)"}, {"front": "Krankenversicherung", "back": "Versicherung, die für jede in der Schweiz wohnhafte Person obligatorisch ist. Für weitere Leistungen kann man sich mit einer freiwillig abgeschlossenen Zusatzversicherung abdecken."}, {"front": "Unfallversicherung", "back": "Versichert sind Arbeitnehmende gegen Berufsunfälle, Berufskrankheiten und ab acht Wochenstunden auch gegen Nichtberufsunfälle."}], rep:[{"question": "[51] Beurteilen Sie die Aussagen zur Gesundheit:", "options": ["Gesundheit ist ein wichtiger persönlicher und gesellschaftlicher Wert.", "Durch Prävention können Krankheiten schneller geheilt werden.", "Die Gesundheitskosten wären tiefer, würden Krankheiten an ihren Ursachen bekämpft werden.", "Die häufigste Todesursache bei jungen Männern ist eine Krebserkrankung."], "correct": [0, 2]}, {"question": "[52] Worauf sind negative Veränderungen des Kreislaufsystems meistens zurückzuführen?", "options": ["Konsum von zu viel Fett und Zucker", "Zu viel Bewegung und Sport", "Rauchen", "Stress"], "correct": [0, 2, 3]}, {"question": "[53] Wobei handelt es sich um soziales Wohlergehen?", "options": ["Gutes Klima am Arbeitsplatz", "Gesunde Ernährung", "Verlässliche Freunde", "Zufriedenheit"], "correct": [0, 2, 3]}, {"question": "[54] Beurteilen Sie die Aussagen zur Sucht:", "options": ["Sucht und Abhängigkeit bedeuten das Gleiche.", "Die WHO hat den Begriff 'Abhängigkeit' durch 'Sucht' ersetzt.", "Die physische Sucht ist schwieriger zu überwinden als die psychische Sucht.", "Abhängigkeit bedeutet einen inneren Zwang zu einem bestimmten Verhalten."], "correct": [0, 3]}, {"question": "[55] Wobei handelt es sich um eine rein psychische Abhängigkeit?", "options": ["Heroin", "Glücksspiel", "Alkohol", "Internet"], "correct": [1, 3]}, {"question": "[56] Beurteilen Sie die Aussagen zum HI-Virus (HIV):", "options": ["Der HI-Virus wurde in den 90er-Jahren entdeckt.", "HIV ist bis heute unheilbar.", "Der HI-Virus überträgt sich ausschliesslich beim Kontakt mit Blut.", "Der HI-Virus kann jahrelang inaktiv bleiben."], "correct": [1, 3]}, {"question": "[57] Beurteilen Sie die Aussagen zu Hepatitis B und C:", "options": ["Die Krankheit kann durch Körperflüssigkeiten übertragen werden.", "Die Sterblichkeitsrate ist eher gering.", "Die Leber entzündet sich durch Viren.", "Das Immunsystem wird angegriffen."], "correct": [0, 1, 2, 3]}, {"question": "[58] Welche Leistungen gehören zu den Grundleistungen einer Krankenkasse?", "options": ["Spitalaufenthalt allgemeine Abteilung", "Zahnbehandlungskosten", "Arztkosten und Kosten für verordnete Medikamente", "Blinddarmoperation in der allgemeinen Abteilung eines Spitals"], "correct": [0, 2, 3]}, {"question": "[59] Beurteilen Sie die Aussagen zur Unfallversicherung:", "options": ["Die Prämien der Berufsunfallversicherung bezahlt der Arbeitgeber.", "Die Abkürzung für Nichtberufsunfallversicherung lautet NBU.", "Die Prämien der NBU kann der Arbeitgeber nicht dem Arbeitnehmer belasten.", "Die SUVA ist die grösste schweizerische Krankenkasse."], "correct": [0, 1]}, {"question": "[60] Sie erleiden einen schweren Berufsunfall. Wer übernimmt sämtliche Kosten?", "options": ["Krankenkasse", "Nichtbetriebsunfallversicherung", "Berufsunfallversicherung", "Haftpflichtversicherung des Arbeitgebers"], "correct": [2]}, {"question": "[61] In welchen Situationen zahlt die Nichtbetriebsunfallversicherung?", "options": ["Sie stürzen zu Hause die Treppe hinunter.", "Eine 20-Jährige ist im dritten Monat schwanger.", "Ein Lernender wird beim Freizeitsport von einer Biene gestochen und muss ins Spital.", "Sie brechen sich bei der Arbeit einen Finger."], "correct": [0, 2]}, {"question": "[62] Beurteilen Sie die Aussagen zur Franchise:", "options": ["Prozentualer Kostenanteil, den die Versicherungsnehmenden selbst tragen müssen.", "Die monatlich zu bezahlende Rechnung für die Versicherung.", "Bei Versicherungen der Grundbetrag, den die Versicherungsnehmenden pro Jahr selbst übernehmen.", "Ein Betrag, der jeweils auf das Ende eines Kalenderjahres angepasst werden kann."], "correct": [2, 3]}, {"question": "[63] Beurteilen Sie die Aussagen zur Grundversicherung der Krankenkasse:", "options": ["Die Grundversicherung ist in der Schweiz nicht obligatorisch.", "Die Leistungen sind bei allen Krankenkassen gleich.", "Die Versicherten müssen sich beim Arztbesuch und Spitalaufenthalt an den Kosten beteiligen.", "Eine Krankenkasse kann einer Person die Aufnahme in die Grundversicherung nicht verweigern."], "correct": [1, 2, 3]}], videos:[] },
+  { id:4, emoji:"🏙️", color:"#457B9D", title:"Leben in der Region", subtitle:"Architektur, Parteien & Kantone", flashcards:[{"front": "Barock", "back": "Musikepoche im 17. Jahrhundert. Wichtige Vertreter: Johann Sebastian Bach, Antonio Vivaldi."}, {"front": "FDP. Die Liberalen", "back": "Freisinnig-Demokratische Partei. Hauptanliegen: Freiheit und Selbstverantwortung der einzelnen Person, Wettbewerb auf dem Markt, gute Rahmenbedingungen für die Wirtschaft, tiefe Steuern, massvoller finanzieller Einsatz bei den Sozialwerken."}, {"front": "Föderalismus", "back": "Staatsaufbau, bei dem die Kantone und der Bund eigene Entscheide treffen können."}, {"front": "Gewerkschaft", "back": "Arbeitnehmerverband, welcher die Interessen der Arbeitnehmenden und der Verwaltungsangestellten vertritt."}, {"front": "Gotik", "back": "Baustilepoche (1200–1450), welche aus Frankreich stammt. Es wurde möglichst in die Höhe gebaut, um Gott nahe zu sein. Spitzbogen und Rosettenfenster sind zentrale Stilelemente der Gotik."}, {"front": "griechische Architektur", "back": "Baustilepoche (1000–300 v. Chr.), in der harmonisch, meist rechteckig und von Säulen umgeben, gebaut wurde."}, {"front": "Jugendstil", "back": "Baustilepoche (1890–1910), welche versuchte, einen eigenständigen Stil zu kreieren. Es entstanden harmonisch geschwungene, verspielte Formen, aber auch uneinheitliche und nicht symmetrische Gebilde."}, {"front": "Klassizismus", "back": "Baustilepoche (1780–1820), welche Elemente aus dem Barock und der Renaissance verwendete, aber auch auf die römische und griechische Antike zurückgriff."}, {"front": "Liberal", "back": "Politische Grundhaltung, welche Weltoffenheit und Freiheit ins Zentrum stellt."}, {"front": "Moderne", "back": "Baustilepoche (ab 1900), welche sich vollständig von den bisherigen Stilen abkehrte. Einfache und klare Formen werden verwendet. Beton, Metall und Glas sind wichtige Baustoffe."}, {"front": "Partei", "back": "Politischer Verein und wichtige Interessenvertreterinnen und -vertreter. (Siehe auch: SPS, die Mitte, SVP, FDP)"}, {"front": "Postmoderne", "back": "Baustilepoche (ab 1950 bis heute), welche die Nutzung/Funktion eines Gebäudes mit einer schönen Gestaltung verbindet. Passende Werkstoffe werden dafür eingesetzt."}, {"front": "Renaissance", "back": "Baustilepoche (1450 –1600), welche auf die römische Klassik zurückgreift (Renaissance=Wiedergeburt). Der Rundbogen wird wieder zum Stilelement."}, {"front": "römische Architektur", "back": "Baustilepoche (400 v. Chr.–500 n. Chr.), welche sich durch massige, zum Teil gigantische Bauten (z. B. Tempel, Theater) auszeichnet. Neben der Weiterführung griechischer Stilelemente kommt neu der Rundbogen hinzu."}, {"front": "SPS", "back": "Sozialdemokratische Partei der Schweiz. Hauptanliegen: mehr soziale Gerechtigkeit (gut ausgebaute Sozialversicherungen, Bildungschancen für alle), offene, solidarische Schweiz (Entwicklungshilfe, Frieden, Menschenrechte), gutes öffentliches Verkehrsnetz, Förderung der erneuerbaren Energien, gegen Atomkraftwerke."}, {"front": "SVP", "back": "Schweizerische Volkspartei. Hauptanliegen: Erhaltung einer neutralen und unabhängigen Schweiz (kein EU- oder NATO-Beitritt), tiefere Steuern, Bekämpfung des Asylmissbrauchs, gegen illegale Einwanderung."}, {"front": "Verband", "back": "Zweckvereinigung, welche die Interessen ihrer Mitglieder vertritt. Diese Interessengemeinschaft kann bestimmte Wirtschaftszweige betreffen (z. B. Landwirtschaft, Gewerbe, Verkehr) oder bestimmte Wirtschaftsteilnehmer (z. B. Arbeitnehmende, Mieterinnen, Konsumenten). (Siehe auch: Gewerkschaft)"}, {"front": "Bundesstaat", "back": "Zusammenschluss aus Teilstaaten zu einem Gesamtstaat (z. B. Schweiz, Deutschland, Österreich, USA)."}, {"front": "Die Mitte", "back": "Die Mitte. Hauptanliegen: Förderung der Familie, bessere Rahmenbedingungen für die Kinderbetreuung, Förderung des Wirtschaftsstandorts Schweiz (Innovationsförderung, attraktive Steuern, gute Infrastruktur, hohes Bildungsniveau), Sicherung der Sozialwerke (Reformen der 1. und 2. Säule)."}], rep:[{"question": "[64] Architektur: Welche Reihenfolge ist zeitlich korrekt?", "options": ["Renaissance - Gotik - Barock - Jugendstil", "Barock - Historismus - Klassizismus - Jugendstil", "Romanik - Gotik - Barock - Renaissance", "Byzantinisch - Romanik - Gotik - Renaissance"], "correct": [3]}, {"question": "[65] Typisch für den Baustil der Renaissance sind:", "options": ["Rückgriff auf die römische Klassik, Betonung der Horizontalen.", "Einsatz neuer Baumaterialien, verschiedene Baustile in einem Gebäude.", "Rückgriff auf die Formen der Natur, verspielte Formen.", "Baustil stammt aus Frankreich, Spitzbogenfenster."], "correct": [0]}, {"question": "[66] Typisch für den romanischen Baustil sind:", "options": ["Kleine Fenster", "Möglichst hohe Kirchen", "Stuckaturen und Goldverzierungen", "Kreuzrippengewölbe in Rundbogenform"], "correct": [0, 3]}, {"question": "[72] Welche politische Aussage kann am ehesten der FDP zugeordnet werden?", "options": ["Wir wollen mehr Freiheit und Selbstverantwortung der einzelnen Person.", "Wir wollen die Familie fördern.", "Wir wollen mehr soziale Gerechtigkeit.", "Die Schweiz muss neutral und unabhängig bleiben."], "correct": [0]}, {"question": "[73] Beurteilen Sie die Aussagen zu linken Politikerinnen und Politikern:", "options": ["Sogenannt linke Politiker gelten als besonders sozial und befürworten staatliche Eingriffe zu Gunsten der wirtschaftlich Schwächeren.", "Sogenannt linke Politiker setzen sich für viel Eigenverantwortung jedes Einzelnen ein.", "Sogenannt linke Politiker gelten als Vertreter einer liberalen Wirtschaft.", "Sogenannt linke Politiker vertreten besonders die Arbeitnehmerinteressen."], "correct": [0, 3]}, {"question": "[74] Ordnen Sie die Aussagen einer politisch linken Grundhaltung zu:", "options": ["Die Militärausgaben sollten um die Hälfte gestrichen werden, um die AHV-Ausgaben zu sichern.", "Der Staat soll möglichst wenig in die Wirtschaft eingreifen, sie reguliert sich von selber.", "Harte Strafen für Straftäter.", "Für die Bewahrung unserer Neutralität braucht es eine gut gerüstete Armee."], "correct": [0]}, {"question": "[75] Welche der Parteien sind im Parteienspektrum 'rechts' einzuordnen?", "options": ["SPS und GLP", "FDP und SVP", "SPS und GPS", "GLP und EVP"], "correct": [1]}, {"question": "[76] Welche Bereiche fallen in die alleinige Kompetenz der Kantone?", "options": ["Schulen", "Militär", "Polizei", "Strassenverkehr"], "correct": [0, 2]}], videos:[] },
+  { id:5, emoji:"🌍", color:"#6A4C93", title:"Zusammenleben in kultureller Vielfalt", subtitle:"Weltreligionen & Zusammenleben", flashcards:[{"front": "Bibel", "back": "Heiliges Buch der Christen, welches die Grundlage der christlichen Religion darstellt. Es ist in das Alte Testament (Entstehung der Welt; Geschichte des Volkes Israel; Begegnung mit Gott) und das Neue Testament (Leben und Wirken Jesus; Glauben der ersten Christen) aufgeteilt."}, {"front": "Buddhismus", "back": "Weltreligion, welche von Siddhartha Gautama begründet wurde. Ziel und Inhalt des buddhistischen Weges ist die Überwindung des Leidens, welches durch Hass, Gier und Verblendung verursacht wird."}, {"front": "Christentum", "back": "Weltreligion, welche aus dem Judentum entstanden ist. Jesus Christus gilt als zentrale Erlöserfigur. (Siehe auch: Bibel)"}, {"front": "Hinduismus", "back": "Weltreligion, welche vor rund 6000 Jahren entstanden ist. Der Hinduismus ist von einer Vielzahl unterschiedlicher Strömungen geprägt. Gläubige Hindus verstehen den Hinduismus mehr als Lebenseinstellung denn als Religion. Es gibt kein Glaubensbekenntnis, keinen Religionsstifter und auch keine zentrale Institution."}, {"front": "Imam", "back": "Religiöses Oberhaupt der Schiiten. Die Imame sind im schiitischen Glauben mit einem unfehlbaren Verständnis der göttlichen Offenbarung versehen. Sie alleine besitzen das Wissen zur absolut sicheren Interpretation des Korans."}, {"front": "Islam", "back": "Weltreligion, welche vom Propheten Mohammed gestiftet wurde. Der Koran gilt als heilige Schrift und Gesetzbuch."}, {"front": "Judentum", "back": "Weltreligion, aus welcher das Christentum und der Islam hervorgingen. Gott gilt als alleiniger, oberster König und Gesetzgeber. Die Tora ist die Grundlage der jüdischen Lehre und gilt als heilig."}, {"front": "Karma", "back": "Glaubensinhalt von asiatischen Lehren, welche das frühere Handeln des Menschen mit dem gegenwärtigen Schicksal verknüpft. Je nach Handlung wird ein gutes oder schlechtes Karma erzeugt. Das Karma bestimmt die Folge und die Art der Wiedergeburten."}, {"front": "Koran", "back": "Heilige Schrift und Gesetzbuch des Islam. Für die Muslime ist er die wortwörtliche Offenbarung von Gottes Wort durch den Propheten Mohammed."}, {"front": "monotheistische Religion", "back": "Glaube an einen einzigen Gott (z. B. Judentum, Christentum, Islam)."}, {"front": "Nirwana", "back": "Buddhistischer Begriff, welcher das Endziel des Lebens beschreibt (die Befreiung von der Wiedergeburt)."}, {"front": "orthodoxe Kirche", "back": "Christliche Kirche, welche überreich mit Bildern von Heiligen (Ikonen) geschmückt ist. Die orthodoxen Christen haben andere Gottesdienstformen als die katholischen und evangelischen Christen."}, {"front": "Religion", "back": "Glaube, welcher durch einen Gott oder mehrere Götter und die damit verbundenen Lehren und Lebensformen bestimmt wird."}, {"front": "Religionsfreiheit", "back": "Grundrecht in der Bundesverfassung. Jeder Mensch hat das Recht, seine Religion frei zu wählen und auszuüben."}, {"front": "Sabbat", "back": "Jüdischer Ruhetag der Woche (Samstag). Der Sabbat gehört ganz der Ruhe und dem Gebet."}, {"front": "Sakrament", "back": "Katholisches Ritual, welches den Glauben zu Christus bezeugt (z. B. Messe, Taufe, Kommunion usw.)."}, {"front": "Scharia", "back": "Islamisches Recht, welches die kulturellen und religiösen Pflichten der Muslime, wirtschaftliche Fragen (Vertragsrecht) und Fragen im Bereich des Straf- und Personenrechts regelt."}, {"front": "Tora", "back": "Heilige Schrift des Judentums, welche die fünf Bücher Moses umfasst. Die Tora ist der erste Teil der hebräischen Bibel. Für Christen ist es das Alte Testament."}], rep:[{"question": "[81] Welche Religionen gehören zu den östlichen Religionen?", "options": ["Islam", "Buddhismus", "Hinduismus", "Judentum"], "correct": [1, 2]}, {"question": "[82] Beurteilen Sie die Aussagen zum Judentum:", "options": ["Das Judentum ist die älteste monotheistische Religion.", "Die heilige Schrift der Juden sind die Veden.", "Orthodoxe Juden beten dreimal am Tag.", "Speisen und Lebensmittel müssen für fromme Juden koscher sein."], "correct": [0, 2, 3]}, {"question": "[83] Beurteilen Sie die Aussagen zu den Religionen:", "options": ["Der jüdische Ruhetag ist der Freitag.", "Buddha war ein Gott.", "Hindus glauben an die Wiedergeburt.", "Der Islam ist die zweitgrösste Religion der Welt."], "correct": [2, 3]}, {"question": "[84] Welches sind monotheistische Religionen?", "options": ["Christentum", "Hinduismus", "Judentum", "Islam"], "correct": [0, 2, 3]}], videos:[] },
+  { id:6, emoji:"🇨🇭", color:"#D4A017", title:"Leben in der Schweiz", subtitle:"Demokratie, Parlament, Steuern & Volksrechte", flashcards:[{"front": "Bundesverfassung", "back": "Grundgesetz der Schweiz."}, {"front": "Demokratie", "back": "Regierungsform, bei der das Volk bestimmt. (Siehe auch: Diktatur)"}, {"front": "Diktatur", "back": "Regierungsform, bei der die Macht in der Hand eines Einzelnen (Diktator) oder weniger Personen (Junta, Partei) ist (z. B. Nordkorea). (Siehe auch: Demokratie)"}, {"front": "direkte Steuer", "back": "Steuer, die mit der Steuererklärung erhoben wird."}, {"front": "Exekutive", "back": "Regierung, welche für die Ausführung der Gesetze zuständig ist (z. B. Bundesrat). (Siehe auch: Gewaltentrennung)"}, {"front": "Gewaltentrennung", "back": "Aufteilung der staatlichen Macht in die drei Gewalten Legislative, Exekutive und Judikative. Die drei Gewalten kontrollieren sich gegenseitig."}, {"front": "Grundrecht (Menschenrechte)", "back": "Recht, das jeder Mensch für sich beanspruchen kann (z. B. Recht auf Leben und auf persönliche Freiheit, Rechtsgleichheit)."}, {"front": "indirekte Steuer", "back": "Steuer, welche auf Konsumgüter und Dienstleistungen erhoben wird (z. B. Mehrwertsteuer)."}, {"front": "Judikative", "back": "Gerichte, welche über Recht und Unrecht urteilen (z. B. Bundesgericht, Kantonsgericht). (Siehe auch: Gewaltentrennung)"}, {"front": "Kumulieren", "back": "Ändern eines vorgedruckten Wahlzettels, indem ein Name ein zweites Mal aufgeführt wird."}, {"front": "Legislative", "back": "Parlament (National- und Ständerat), welches die Gesetze macht, den Bundesrat und die Bundesrichter wählt, die Staatsausgaben beschliesst und die Verwaltung kontrolliert. (Siehe auch: Gewaltentrennung)"}, {"front": "Majorzwahl", "back": "Wahl, bei der die Person gewählt ist, welche die meisten Stimmen auf sich vereinigt. (Siehe auch: Proporzwahl)"}, {"front": "Mehrwertsteuer", "back": "Steuer, die der Bund beim Verkauf von Konsumgütern und Dienstleistungen verlangt."}, {"front": "Monarchie", "back": "Regierungsform, bei der die Macht in der Hand eines Königs oder einer Königin liegt."}, {"front": "Panaschieren", "back": "Ändern eines vorgedruckten Wahlzettels durch Aufnahme eines Namens aus einer anderen Liste."}, {"front": "Politisches Recht", "back": "Recht der volljährigen Staatsbürger und -bürgerinnen zur demokratischen Mitbestimmung, z. B. Wahl- und Stimmrecht."}, {"front": "Proporzwahl", "back": "Wahl, bei der für die Zuteilung der Sitze in erster Linie die erzielten Parteistimmen massgebend sind. Innerhalb der Partei sind die Kandidierenden mit den meisten Kandidatenstimmen gewählt. (siehe auch: Majorzwahl)"}, {"front": "Referendum", "back": "Recht der Bürger und Bürgerinnen, über ein vom Parlament beschlossenes Gesetz abstimmen zu können."}, {"front": "Ständemehr", "back": "Mehrheit der Kantone (Stände). (Siehe auch: Volksmehr)"}, {"front": "Steuerbares Einkommen", "back": "Zu versteuerndes Einkommen, welches nach allen Abzügen in der Steuererklärung anzugeben ist."}, {"front": "Steuererklärung", "back": "Angaben eines Steuerpflichtigen (z. B. Einkommen), die dem Steueramt zur Festlegung der zu entrichtenden Steuern eingereicht werden müssen. (Siehe auch: direkte Steuer, indirekte Steuer)"}, {"front": "Steuerprogression", "back": "Steuersatz; wer mehr verdient, zahlt prozentual mehr Steuern."}, {"front": "Stimmrecht", "back": "Recht, an Abstimmungen teilzunehmen."}, {"front": "Verrechnungssteuer", "back": "Mittel zur Verhinderung der Steuerhinterziehung. Der Bund erhebt eine Verrechnungssteuer von 35% und erstattet den Betrag zurück, wenn das Vermögen auf der Steuererklärung korrekt angegeben wird."}, {"front": "Initiative", "back": "Recht des Volkes, mittels Unterschriftensammlung eine Abstimmung über eine Verfassungsänderung zu verlangen (Volksbegehren)."}, {"front": "Volksmehr", "back": "Mehrheit der gültigen Stimmen in der ganzen Schweiz. (Siehe auch: Ständemehr)"}, {"front": "Wahlrecht", "back": "Recht, an Wahlen aktiv oder passiv teilzunehmen."}], rep:[{"question": "[86] Was grenzt die Demokratie von der Diktatur ab?", "options": ["Aufteilung der Staatsgewalt; die drei Gewalten kontrollieren sich gegenseitig.", "Menschenrechte und Bürgerrechte sind garantiert.", "Freie Wahlen und Abstimmungen.", "Meinungs- und Pressefreiheit."], "correct": [0, 1, 2, 3]}, {"question": "[87] Wobei handelt es sich um eine Monarchie?", "options": ["Saudi-Arabien", "Nordkorea", "Deutschland", "Schweiz"], "correct": [0]}, {"question": "[88] Die Schweizerische Bundesverfassung ...", "options": ["ist die Basis für alle anderen Gesetzbücher.", "sichert den Bürgerinnen und Bürgern Rechte.", "beinhaltet das OR und das ZGB.", "sorgt für die Aufteilung der politischen Gewalten."], "correct": [0, 1, 3]}, {"question": "[89] Beurteilen Sie die Aussagen zum Parlament:", "options": ["Der Ständerat und der Nationalrat bilden zusammen das Parlament.", "Der Nationalrat zählt 200 Mitglieder.", "Der Ständerat zählt 46 Mitglieder.", "Der Nationalrat wurde geschaffen, damit kleinere Kantone mehr politisches Gewicht erhalten."], "correct": [0, 1, 2]}, {"question": "[90] Beurteilen Sie die Aussagen zur Funktion der drei Staatsgewalten:", "options": ["Ein neues Gesetz wird von der Legislative verabschiedet.", "Über das Budget entscheidet die Exekutive.", "Neue Richter zu wählen, ist Sache der Judikative.", "Eine Strafuntersuchung zu führen, ist Sache der Legislative."], "correct": [0]}, {"question": "[91] Was kann der Legislative zugeordnet werden?", "options": ["Gesetzgebende Gewalt", "Bundesgericht", "Ausführende Gewalt", "Ständerat"], "correct": [0, 3]}, {"question": "[92] Wobei handelt es sich um Grundrechte/Menschenrechte?", "options": ["Niederlassungsfreiheit", "Glaubens- und Gewissensfreiheit", "Versammlungsfreiheit", "Stimm- und Wahlrecht"], "correct": [1, 2]}, {"question": "[93] Wobei handelt es sich um das Referendumsrecht?", "options": ["Eine neue Bestimmung soll in der Verfassung geschaffen werden.", "Ein vom Parlament verabschiedetes Gesetz wird bekämpft.", "Alle Einwohner der Schweiz dürfen dieses politische Recht wahrnehmen.", "Auf Bundesebene sind mindestens 50'000 Unterschriften notwendig."], "correct": [1, 3]}, {"question": "[94] Beurteilen Sie folgende Aussagen zur Politik:", "options": ["Der Ständerat gehört zur Exekutive.", "Über eine Änderung der Bundesverfassung muss immer abgestimmt werden.", "'Absolutes Mehr': man ist gewählt, wenn man mehr als 50% aller gültigen Stimmen erhalten hat.", "Bei der Gesetzgebung ist der Nationalrat wichtiger als der Bundesrat."], "correct": [1, 2, 3]}, {"question": "[95] Wie gross ist das absolute Mehr? (Stimmzettel: ausgeteilt 212, eingegangen 207, leer 10, ungültig 2)", "options": ["97", "98", "104", "107"], "correct": [1]}, {"question": "[96] Von einer Proporzwahl spricht man, wenn …", "options": ["das Volks- und das Ständemehr verlangt werden.", "die Person gewählt ist, welche die höchste Stimmenzahl erreicht hat.", "die Person gewählt ist, die das absolute Mehr erreicht hat.", "die Sitzzuteilung im Verhältnis zur Parteistärke erfolgt."], "correct": [3]}, {"question": "[97] Wobei handelt es sich um das Ständemehr?", "options": ["Über 50 % aller Schweizerinnen und Schweizer hatten die Initiative abgelehnt.", "Die Kandidatin hat bei den Gemeindewahlen eine Stimme mehr als die Hälfte aller Stimmen erreicht.", "14 Kantone haben beim doppelten Mehr zugestimmt.", "Das Volk und die Stände nahmen die Vorlage an."], "correct": [2]}, {"question": "[98] Was bedeutet der Begriff 'relatives Mehr' bei einer Wahl?", "options": ["Die höchste Stimmenzahl ist ausschlaggebend.", "Benötigt wird eine Stimme mehr als die Hälfte der gültig abgegebenen Stimmen.", "Zwei Drittel aller Stimmen sind erforderlich.", "Die Person mit der tiefsten Stimmenzahl scheidet aus."], "correct": [0]}, {"question": "[99] Wobei handelt es sich um eine Volksinitiative?", "options": ["100'000 Unterschriften in 18 Monaten.", "Es braucht das doppelte Mehr.", "Die Verfassung soll geändert werden.", "50'000 Unterschriften in 100 Tagen."], "correct": [0, 1, 2]}, {"question": "[100] Welche Rechte können nur Schweizer Bürgerinnen und Bürger wahrnehmen?", "options": ["Initiativrecht", "Stimmrecht", "Recht auf freie Wahl des Glaubens", "Versammlungsfreiheit"], "correct": [0, 1]}, {"question": "[101] Der Begriff 'Steuerprogression' bedeutet:", "options": ["Alle müssen unabhängig von ihrem Einkommen Steuern bezahlen.", "Alle haben gleich viele Prozente ihres Einkommens als Steuern zu bezahlen.", "Alle müssen Einkommens- und Vermögenssteuern bezahlen.", "Wer mehr verdient, hat prozentual mehr Steuern zu bezahlen."], "correct": [3]}, {"question": "[102] Welches sind direkte Steuern?", "options": ["Einkommenssteuer", "Tabaksteuer", "Mehrwertsteuer", "Vermögenssteuer"], "correct": [0, 3]}, {"question": "[103] Wobei handelt es sich um die Einkommenssteuer?", "options": ["Zinsgutschrift auf Bankkonto ab 200 CHF", "Wareneinkauf", "Ertrag aus vermieteter Liegenschaft", "Eigentum von Obligationen"], "correct": [0, 2]}, {"question": "[104] Welches sind indirekte Steuern?", "options": ["Vermögenssteuer", "Mehrwertsteuer", "Alkoholsteuer", "Hundesteuer"], "correct": [1, 2, 3]}, {"question": "[105] Was können Sie tun, wenn die Steuerveranlagung Ihrer Meinung nach zu hoch ist?", "options": ["Beschwerde: Brief an den Gemeinderat.", "Einsprache: Brief an die Steuerbehörde.", "Im Moment nichts; nächstes Jahr geltend machen.", "Nichts: Sie müssen die Steuerveranlagung akzeptieren."], "correct": [1]}, {"question": "[106] Welche Unterlagen braucht man zum Ausfüllen der Steuererklärung?", "options": ["Lohnausweis", "Zusammenstellung der Vermögenserträge", "Belege für grössere Spenden", "Belege für meine Ferienflugreise"], "correct": [0, 1, 2]}], videos:[] },
+  { id:7, emoji:"📊", color:"#3D8B37", title:"Wirtschaft und Gesellschaft", subtitle:"Energie, Klima & Treibhauseffekt", flashcards:[{"front": "CO₂-Ausstoss", "back": "Die chemische Verbindung, Kohlenstoffdioxid (CO₂), ist ein wichtiges Treibhausgas, das bei der Verbrennung von Benzin, Öl, Gas und ähnlichen fossilen Brennstoffen entsteht und in die Erdatmosphäre ausgestossen wird. (Siehe auch: Klimaveränderung)"}, {"front": "Energiequelle (fossile, erneuerbare)", "back": "Stoff, welcher zur Energiegewinnung genutzt wird. Man unterscheidet fossile Energieträger (Erdöl, Erdgas, Kohle), Energie aus Atomkraft und erneuerbare Energiequellen (Wasser, Sonne, Wind, Erdwärme, Biogas)."}, {"front": "Klimaveränderung", "back": "Messbare Veränderung des Klimas, was sich insbesondere durch eine Häufung von extremen Witterungs- und Klimaphänomenen (z. B. Überschwemmungen, Stürme, wärmere Winter) zeigt. Ursache für den aktuellen Klimawandel ist der vom Menschen verursachte Treibhauseffekt."}, {"front": "Ressourcen", "back": "Sämtliche zur Verfügung stehende Güter (z. B. Rohstoffe) und Dienstleistungen."}, {"front": "Treibhauseffekt", "back": "Ursache für die globale Erwärmung. Treibhausgase (z. B. CO₂) in der Atmosphäre bewirken eine Erwärmung der Erdatmosphäre."}], rep:[{"question": "[107] Wobei handelt es sich um erneuerbare Energiequellen?", "options": ["Erdwärme", "Erdgas", "Biogas", "Braunkohle"], "correct": [0, 2]}, {"question": "[108] Beurteilen Sie folgende Aussagen zur Klimaveränderung:", "options": ["Der Meeresspiegel nimmt mit dem Anstieg der Temperaturen ab.", "Steigt die Temperatur weiterhin an, häufen sich Hurrikans.", "Der Treibhauseffekt ist notwendig für das Leben auf der Erde.", "Die durchschnittliche Temperatur an der Erdoberfläche beträgt +10°C."], "correct": [1, 2]}, {"question": "[109] Beurteilen Sie die Aussagen zum Treibhauseffekt:", "options": ["Das Klima erwärmt sich.", "Die Durchschnittstemperaturen fallen ständig.", "Der Treibhauseffekt wird z.B. durch Abgase verstärkt.", "Die Gletscher in den Alpen bilden sich zurück."], "correct": [0, 2, 3]}], videos:[] },
+  { id:8, emoji:"🌐", color:"#F77F00", title:"Die Schweiz in Europa und der Welt", subtitle:"UNO, EU, NATO & Frankenkurs", flashcards:[{"front": "EU", "back": "Europäischer Staatenverbund mit 28 Mitgliedstaaten."}, {"front": "IKRK", "back": "Internationale Organisation, welche 1863 von Henri Dunant gegründete wurde. Sie setzt sich weltweit für das Einhalten des humanitären Völkerrechts ein, um menschliche Leiden zu verhüten und zu lindern. (Siehe auch: humanitäre Hilfe)"}, {"front": "NATO", "back": "Militärisches Bündnis europäischer und nordamerikanischer Staaten zur Kriegsverhütung und Krisenbewältigung."}, {"front": "OSZE", "back": "Organisation für Sicherheit und Zusammenarbeit in Europa, welche sich für die Sicherheit in Europa, die Menschenrechte und Konfliktverhütung einsetzt."}, {"front": "UNICEF", "back": "Hilfswerk der Vereinten Nationen, welches sich für die Verbesserung der Lebensbedingungen von Kindern einsetzt."}, {"front": "UNO", "back": "Internationale Organisation von 193 Staaten mit dem Ziel, den Weltfrieden zu sichern."}, {"front": "UNO-Generalversammlung", "back": "Vollversammlung aller Mitgliedstaaten der Vereinten Nationen, welche jährlich in New York stattfindet."}, {"front": "UNO-Sicherheitsrat", "back": "Teil der Vereinten Nationen, welches sich für den Frieden in der Welt einsetzt."}], rep:[{"question": "[118] Die UNO-Hauptorganisation verfolgt folgende Ziele:", "options": ["Sichern des Weltfriedens", "Fördern des Welthandels", "Schutz der Menschenrechte", "Förderung der internationalen Zusammenarbeit"], "correct": [0, 2, 3]}, {"question": "[123] Beurteilen Sie die Aussagen zur EU:", "options": ["Das Europäische Parlament tagt abwechselnd in Brüssel und Strassburg.", "Die EU ist eine supranationale Organisation.", "Je nach Bevölkerungsgrösse eines Landes haben die Minister im Ministerrat mehr oder weniger Stimmen.", "Das Europäische Parlament hat viel Macht."], "correct": [0, 1, 2]}, {"question": "[125] Beurteilen Sie die Aussagen zur UNO:", "options": ["Die Schweiz ist der UNO als eines der ersten Länder beigetreten.", "Die Verfassung der UNO wird Charta genannt.", "Ein Ziel der UNO ist die Sicherung des Weltfriedens.", "Der Hauptsitz der UNO ist in Genf."], "correct": [1, 2]}, {"question": "[126] Welche Ziele verfolgt die NATO?", "options": ["Menschliches Leiden verhüten und lindern.", "Militärisches Verteidigungsbündnis zur Konfliktverhütung und Krisenbewältigung.", "Sicherheit in Europa wahren und Konflikte verhüten.", "Bekämpfung der Menschenrechtsverletzungen und Hilfe für politische Gefangene."], "correct": [1]}, {"question": "[130] Ein hoher Frankenkurs ist für die Schweizer Wirtschaft schlecht, weil …", "options": ["Importwaren dadurch teurer werden.", "Schweizer Produkte im Ausland dadurch teurer werden.", "Ferien in der Schweiz für Ausländer dadurch teurer werden.", "Ferien im Ausland für die Schweizer dadurch teurer werden."], "correct": [1, 2]}, {"question": "[131] Wer wünscht sich alles einen hohen Frankenkurs?", "options": ["Schweizer Autoimporteure", "Schweizer Maschinenindustrie", "Schweizer Tourismusbranche", "Schweizer, die im Ausland Ferien verbringen"], "correct": [0, 3]}, {"question": "[132] Der Wert des Schweizer Frankens gegenüber USD/EUR steigt. Dies wirkt sich vorteilhaft aus auf:", "options": ["Den Fremdenverkehr in der Schweiz", "Den Preis importierter Computeranlagen in die Schweiz", "Die Exporte der Schweizer Maschinenindustrie", "Die Preise von Schweizer Uhren im Ausland"], "correct": [1]}, {"question": "[133] Welche Folgen hat ein schwacher Franken?", "options": ["Für Ausländer sind Importe aus der Schweiz verhältnismässig teuer.", "Für Ausländer sind Importe aus der Schweiz verhältnismässig billig.", "Für Schweizer sind Importe aus dem Ausland verhältnismässig teuer.", "Ferien in der Schweiz sind für ausländische Touristen verhältnismässig billig."], "correct": [1, 2, 3]}, {"question": "[134] Am Bankschalter in Basel wechseln Sie Franken in Euro. Mit welchem Kurs rechnet die Bank?", "options": ["Noten Ankauf", "Noten Verkauf", "Devisen Ankauf", "Devisen Verkauf"], "correct": [1]}], videos:[] },
+  { id:9, emoji:"🔗", color:"#9B59B6", title:"Globalisierung", subtitle:"Welthandel, Entwicklungsländer & Medien", flashcards:[{"front": "Dritte Welt", "back": "Unterentwickelte Staaten, welche Defizite in den Bereichen Gesundheit, Infrastruktur, Bildung und Politik aufweisen."}, {"front": "Entwicklungsland", "back": "Staat, welcher nicht in der Lage ist, die eigene Bevölkerung mit lebensnotwendigen Gütern und Dienstleistungen zu versorgen und ihr somit ein menschenwürdiges Leben zu ermöglichen."}, {"front": "Entwicklungszusammenarbeit", "back": "Bereich der schweizerischen Aussenpolitik; Engagement zur Bekämpfung der Armut durch finanzielle Unterstützung und Programme vor Ort."}, {"front": "Ethik", "back": "Lehre vom moralischen Handeln des Menschen. Ethische Kaufkriterien berücksichtigen die Produktions- und Arbeitsbedingungen im Herkunftsland. So wird etwa auf faire Löhne und ein Verbot von Kinderarbeit geachtet (Fair Trade)."}, {"front": "Globalisierung", "back": "Weltweite Verflechtung auf unterschiedlichen Gebieten wie z. B. Wirtschaft, Ökologie usw."}, {"front": "humanitäre Hilfe", "back": "Massnahme, um dort Leid zu lindern und Leben zu retten, wo infolge von Armut, Naturkatastrophen oder bewaffneten Konflikten schreckliche Zustände herrschen. (Siehe auch: IKRK, UNICEF)"}, {"front": "Industrienation", "back": "Staat, welcher in der sozialen, wirtschaftlichen und politischen Entwicklung einen hohen Stand aufweist. (Siehe auch: Industrialisierung)"}, {"front": "Internet", "back": "Weltweites Netzwerk, welches die Verbindung einzelner Computer ermöglicht."}, {"front": "Medien", "back": "Kommunikationsmittel zur Verbreitung  von Informationen, Unterhaltung usw. (z. B. Zeitung, Fernsehen)."}], rep:[{"question": "[135] Beurteilen Sie die Aussagen zur Globalisierung:", "options": ["Durch die Globalisierung werden die Umweltprobleme kleiner.", "Durch die Globalisierung werden viele Waren für den Konsumenten billiger.", "Durch die Globalisierung hat der Konsument ein grösseres Warenangebot.", "Durch die Globalisierung werden viele Arbeitsplätze vom Ausland in die Schweiz verlagert."], "correct": [1, 2]}, {"question": "[136] Worauf ist die Zunahme des grenzüberschreitenden Warenhandels zurückzuführen?", "options": ["Der Warentransport ist schneller und günstiger geworden.", "Die Einführung von neuen Zöllen erleichtert den Handel.", "Die Waren werden dort hergestellt, wo die Produktion am günstigsten ist.", "Für die Schweiz haben Import und Export eine geringe Bedeutung."], "correct": [0, 2]}, {"question": "[137] Beurteilen Sie die Aussagen zu den Entwicklungsländern:", "options": ["In den Entwicklungsländern gibt es viel Industrie und das BIP pro Kopf ist hoch.", "Entwicklungsländer führen oft gewaltsame Konflikte mit umliegenden Staaten.", "In Entwicklungsländern herrscht oft politische Instabilität.", "In Entwicklungsländern werden Menschenrechte oft verletzt."], "correct": [1, 2, 3]}, {"question": "[138] Beurteilen Sie die Aussagen zu den Entwicklungsländern (2):", "options": ["In Entwicklungsländern werden die Menschen älter als in Industrieländern.", "In Entwicklungsländern gibt es eine hohe Kindersterblichkeit.", "Die Industrieländer nützen die Schwächen der Drittweltländer aus.", "In Entwicklungsländern dienen Kinder als Altersvorsorge."], "correct": [1, 2, 3]}, {"question": "[139] Beurteilen Sie die Aussagen zur Ethik:", "options": ["Ethik befasst sich mit Fragen des Zusammenlebens in einer Gesellschaft.", "Die ethischen Grundsätze werden häufig dem reinen Profitdenken geopfert.", "Jede Gesellschaft hat die gleichen Antworten auf ethische Fragen.", "Bei der Ethik spielen Tiere keine Rolle."], "correct": [0, 1]}, {"question": "[140] Beurteilen Sie die Aussagen zu den Medien:", "options": ["Der Begriff 'Medien' ist eine Sammelbezeichnung für Kommunikationsmittel mit Breitenwirkung.", "Medienkompetenz bezeichnet die Fähigkeit, Medien sachkundig zu nutzen.", "Medien können die Realität nie vollständig abbilden.", "Als Fake News werden lancierte Falschmeldungen bezeichnet."], "correct": [0, 1, 2, 3]}, {"question": "[141] Beurteilen Sie die Aussagen zu den Medien (Wirklichkeit):", "options": ["Ein Ereignis und dessen Abbildung sind identische Dinge.", "Medien registrieren immer nur einen Teil des Geschehens.", "Menschen verändern vor der Kamera ihr Verhalten.", "Als Zuschauerin sind wir in der Lage, alle Informationen einer Sendung wahrzunehmen."], "correct": [1, 2]}, {"question": "[142] Warum sind Medien ein Machtfaktor?", "options": ["Medien tragen wesentlich zur Meinungsbildung bei.", "Medien können keine Kontrolle über politische Behörden ausüben.", "Personen aus Politik und Wirtschaft nutzen Medien für die Durchsetzung eigener Interessen.", "Medienleute haben durch ihre Auswahl von Informationen grossen Einfluss auf die öffentliche Meinung."], "correct": [0, 2, 3]}], videos:[] },
+  { id:10, emoji:"🧠", color:"#48CAE4", title:"Persönliche Entwicklung", subtitle:"Familie, Ehe, Gender & Güterstand", flashcards:[{"front": "Eherecht", "back": "Recht, welches die Bestimmungen über die Ehe regelt."}, {"front": "Eigengut", "back": "Vermögenswerte, welche die Ehepartner bei einer Auflösung der Ehe behalten und nicht mit dem Partner teilen."}, {"front": "Elterliches Sorgerecht", "back": "Begriff aus dem Familienrecht, welcher die Beziehung zwischen Eltern und Kind regelt. (Siehe auch: Kindesrecht)"}, {"front": "Errungenschaft", "back": "Vermögenswerte, die die Ehepartner während der Ehe erwirtschaften und die bei einer Auflösung der Ehe geteilt werden."}, {"front": "Gender", "back": "Das soziale (nicht das biologische) Geschlecht innerhalb der Gesellschaft. Frau und Mann werden oft unterschiedlich behandelt. Ziel der Gender Studies ist es, die Ungleichbehandlungen in der Gesellschaft zu erkennen und zu verringern."}, {"front": "Güterstand", "back": "Regelung, welche die Vermögensverhältnisse der Eheleute während der Ehe und bei deren Auflösung regelt (Errungenschaftsbeteiligung, Gütergemeinschaft, Gütertrennung)."}, {"front": "Heirat", "back": "Das Schliessen einer Ehe."}, {"front": "Kindesrecht", "back": "Recht, welches das Verhältnis zwischen Kindern und Eltern regelt."}, {"front": "Kindesverhältnis", "back": "Recht, welches klärt, wer der Vater und wer die Mutter eines Kindes ist."}, {"front": "Konkubinat", "back": "Lebensgemeinschaft zweier Personen, die nicht miteinander verheiratet sind bzw. deren Partnerschaft nicht eingetragen ist."}, {"front": "Trauung", "back": "Vorgang der Eheschliessung."}, {"front": "Unterhaltspflicht der Eltern", "back": "Pflicht der Eltern, für den Unterhalt des Kindes zu sorgen, bis es volljährig ist (Kosten für Pflege, Erziehung und Ausbildung). Dauert die Ausbildung über die Volljährigkeit hinaus, sind die Eltern verpflichtet, bis zum ordentlichen Abschluss der Erstausbildung Unterhalt zu leisten (soweit zumutbar)."}, {"front": "Verlobung", "back": "Das gegenseitige Versprechen, in Zukunft eine Ehe einzugehen."}], rep:[{"question": "[143] Beurteilen Sie die Aussagen zur Gleichberechtigung:", "options": ["Erst 1990 erhielten die Schweizerinnen das Stimm- und Wahlrecht auf eidgenössischer Ebene.", "Im eidgenössischen Parlament sind die Frauen heute in der Überzahl.", "Das Bundesgericht hat Appenzell Innerrhoden zur Einführung des Frauenstimmrechts gezwungen.", "Das Familienrecht geht davon aus, dass Mann und Frau gemeinsam für das Wohl der Familie sorgen."], "correct": [2, 3]}, {"question": "[144] Beurteilen Sie die Aussagen zu Gender:", "options": ["Der Begriff meint das biologische Geschlecht.", "Der Begriff meint das soziale Geschlecht.", "Der Begriff stammt ursprünglich aus dem Französischen.", "Der Begriff bezeichnet die gesellschaftliche Geschlechterrolle."], "correct": [1, 3]}, {"question": "[145] Beurteilen Sie die Aussagen zum Familienrecht:", "options": ["Verheiratete Eltern üben nach Gesetz das elterliche Sorgerecht gemeinsam aus.", "Bei der Heirat muss immer ein Vertrag abgeschlossen werden.", "Die Eheleute können gegenseitig Auskunft über Vermögen, Einkommen und Schulden verlangen.", "Die Eltern sind verpflichtet, bei der Erziehung auf das Wohl des Kindes Rücksicht zu nehmen."], "correct": [0, 2, 3]}, {"question": "[146] Welche Paare dürfen heiraten?", "options": ["Ein Mann und seine Adoptivschwester bekommen ein Kind und möchten heiraten.", "Eine Frau und ein Mann wohnen seit Jahren zusammen und möchten nun heiraten.", "Ein Mann möchte seine Cousine heiraten.", "Eine 17-Jährige erwartet ein Kind und möchte ihren 18-jährigen Freund heiraten."], "correct": [1, 2]}, {"question": "[147] Beurteilen Sie die Aussagen zum Konkubinat:", "options": ["Beim Tod eines Konkubinatspartners hat der Lebensgefährte keinen gesetzlichen Erbanspruch.", "Das Konkubinat ist eine Ehe ohne Trauschein.", "Das Gesetz enthält keine Bestimmungen zum Konkubinat.", "Die Gründung und Auflösung des Konkubinats erfolgt ohne Formalitäten."], "correct": [0, 1, 2, 3]}, {"question": "[148] Beurteilen Sie die Aussagen zur Verlobung und Ehe:", "options": ["Eine Verlobung ist ein Eheversprechen.", "Adoptivgeschwister dürfen heiraten.", "Die zivile Trauung darf erst nach der religiösen Trauung stattfinden.", "Grundsätzlich behält jeder Ehegatte seinen Ledignamen."], "correct": [0, 3]}, {"question": "[149] Beurteilen Sie die Aussagen (Ehe/Zivilrecht):", "options": ["Wenn ein erwerbstätiges Kind im Haushalt der Eltern lebt, haben die Eltern Anrecht auf einen Beitrag an die Haushaltskosten.", "Bei einer Ziviltrauung braucht es zwei handlungsfähige Personen als Trauzeugen.", "Bei Auflösung der Ehe erhält jeder Ehegatte die Hälfte der Errungenschaft des andern.", "In der Schweiz sind alle Menschen ehefähig, sofern sie 18 Jahre oder älter sind."], "correct": [0, 1, 2]}, {"question": "[150] Beurteilen Sie die Aussagen zur eingetragenen Partnerschaft:", "options": ["Die eingetragene Partnerschaft verleiht homosexuellen Paaren einen rechtlichen Rahmen.", "Eingetragene Paare haben genau die gleichen Rechte und Pflichten wie Ehepaare.", "Im Partnerschaftsgesetz sind fortpflanzungstechnische Verfahren verboten.", "In der eingetragenen Partnerschaft kann ein gemeinsamer Familienname gewählt werden."], "correct": [0, 2, 3]}, {"question": "[151] Beurteilen Sie die Aussagen (Eltern/Kind):", "options": ["Das Kind verheirateter Eltern erhält den von den Eltern gewählten gemeinsamen Familiennamen.", "Die Unterhaltspflicht der Eltern endet spätestens, wenn das Kind volljährig ist.", "Solange ein Kind minderjährig ist, steht es unter der elterlichen Sorge.", "Bei einer Scheidung bekommt immer die Frau das Sorgerecht."], "correct": [0, 2]}, {"question": "[152] Beurteilen Sie die Aussagen (Kind und Eltern, Rechte):", "options": ["Das Kind darf ohne Einwilligung der Eltern die häusliche Gemeinschaft nicht verlassen.", "Die Erträge eines Kindesvermögens dürfen für Unterhalt, Erziehung und Ausbildung verwendet werden.", "Das Kind darf über seinen Arbeitserwerb und sein Taschengeld selbst verfügen.", "Wohnt das Kind bei den Eltern, können die Eltern einen Beitrag an die Haushaltskosten verlangen."], "correct": [0, 1, 2, 3]}, {"question": "[153] In die Errungenschaft (ordentlicher Güterstand) gehört/gehören:", "options": ["Eine Erbschaft der Ehefrau.", "Die Mieteinnahmen aus einer während der Ehe erworbenen Liegenschaft.", "Der Verkaufserlös von Aktien, die der Mann in die Ehe eingebracht hat.", "Ersparnisse, die während der Ehe vom Einkommen gemacht werden."], "correct": [1, 3]}, {"question": "[154] Ins Eigengut (ordentlicher Güterstand) gehört/gehören:", "options": ["Ein in die Ehe eingebrachter Sportwagen.", "Möbel, die kurz nach der Heirat vom Einkommen gekauft wurden.", "Der Verkaufserlös von Aktien, die in die Ehe eingebracht wurden.", "Ersparnisse, die vor der Ehe gemacht wurden."], "correct": [0, 2, 3]}], videos:[] },
+  { id:11, emoji:"🔧", color:"#E76F51", title:"Arbeit und Beruf", subtitle:"Arbeitsvertrag, Kündigung & Sozialversicherungen", flashcards:[{"front": "Arbeitsbestätigung", "back": "Vom Arbeitgeber ausgestellte Bestätigung, welche nur die Art und Dauer der Beschäftigung beinhaltet."}, {"front": "Arbeitslosenversicherung (ALV)", "back": "Sozialversicherung, die arbeitslosen Personen während der Stellensuche ein Einkommen ermöglicht."}, {"front": "Arbeitsvertrag", "back": "Vertrag zwischen dem Arbeitgeber und dem Arbeitnehmer."}, {"front": "Arbeitszeugnis", "back": "Vom Arbeitgeber ausgestelltes Zeugnis, das Auskunft über die Dauer des Arbeitsverhältnisses, die Arbeitsleistung, über deren Qualität und über das Verhalten des Mitarbeitenden gibt."}, {"front": "Einzelarbeitsvertrag (EAV)", "back": "Vertrag, mit dem sich der Arbeitnehmende verpflichtet, dem Arbeitgebenden seine Arbeitsleistung zur Verfügung zu stellen und dafür vom Arbeitgebenden einen Lohn erhält."}, {"front": "Erwerbsersatzordnung (EO)", "back": "Obligatorische Sozialversicherung, die den Erwerbsausfall bei Militär- und Zivildienst sowie bei Mutterschaft (14 Wochen) abdeckt (80 % des versicherten Lohnes)."}, {"front": "fristlose Kündigung", "back": "Einseitige Aufhebung des Arbeitsvertrags ohne Einhaltung der Kündigungsfristen. Bei einer per sofort ausgesprochene Beendigung des Vertragsverhältnisses muss ein wichtiger Grund vorliegen. (Siehe auch: Sperrfrist)"}, {"front": "Gesamtarbeitsvertrag (GAV)", "back": "Vertrag zwischen Arbeitnehmerverbänden und Arbeitgeberverbänden über die Arbeitsbedingungen in einer bestimmten Branche."}, {"front": "Invalidenversicherung (IV)", "back": "Obligatorische Sozialversicherung, die die Existenzgrundlage invalider Personen sichert und deren Wiedereingliederung in die Arbeitswelt fördert."}, {"front": "missbräuchliche Kündigung", "back": "Unerlaubte Vertragsauflösung, die zu Schadenersatz führen kann. (Siehe auch: Sperrfrist)"}, {"front": "Mutterschaftsversicherung", "back": "Sozialversicherung, welche den Lohn bei werdenden Müttern übernimmt (80% des regulären Einkommens). Erwerbstätige Frauen haben Anspruch auf 14 Wochen Mutterschaftsurlaub."}, {"front": "ordentliche Kündigung", "back": "Auflösung eines Arbeitsvertrages; während der Probezeit kann das Arbeitsverhältnis innerhalb von 7 Tagen aufgelöst werden. Sie dauert maximal 3 Monate."}, {"front": "Probezeit", "back": "Ein vereinbarter Zeitraum, während dem das Arbeitsverhältnis unter erleichterten Bedingungen aufgehoben werden kann."}, {"front": "Sozialversicherungen", "back": "Pflichtversicherungen, die Schutz für die einzelne Person vor persönlichen Notlagen bieten. Dazu gehören: AHV, IV, EO, ALV, Pensionskasse, Krankenversicherung, Unfallversicherung."}, {"front": "Sperrfrist", "back": "Zeitspanne, in der der Arbeitgeber nicht berechtigt ist, dem Arbeitnehmenden zu kündigen (z. B. bei Krankheit, Unfall, Schwangerschaft, Militärdienst)."}, {"front": "Taggelder", "back": "Geldleistung einer Versicherung (z. B. Arbeitslosenentschädigung)."}, {"front": "Überstunden", "back": "Überschreitung der im Arbeitsvertrag festgelegten Arbeitszeiten. Diese müssen betrieblich notwendig und für die Arbeitnehmerin zumutbar sein."}], rep:[{"question": "[159] Worauf müssen Sie bei der Erstellung des Bewerbungsdossiers achten?", "options": ["Das Dossier ist optisch ansprechend und übersichtlich gegliedert.", "Rechtschreibefehler dürfen vorkommen.", "Sie teilen mit, warum gerade Sie für die ausgeschriebene Stelle geeignet sind.", "Sie dokumentieren, dass Sie die Stellenausschreibung gründlich gelesen haben."], "correct": [0, 2, 3]}, {"question": "[160] Worauf müssen Sie beim Bewerbungsgespräch achten?", "options": ["Auf eine Gesprächsvorbereitung können Sie verzichten.", "Spielen Sie einen möglichen Ablauf des Vorstellungsgesprächs vorher durch.", "Sie bieten bei der erstbesten Gelegenheit das Du an.", "Auf ein paar wenige Fragen die Unwahrheit sagen schadet nicht."], "correct": [1]}, {"question": "[161] Wo finden Sie gesetzliche Bestimmungen zum Einzelarbeitsvertrag?", "options": ["Zivilgesetzbuch", "Arbeitsgesetz", "Bundesverfassung", "Obligationenrecht"], "correct": [1, 3]}, {"question": "[162] Wie lange dauert die Sperrfrist bei Kündigung durch den Arbeitgeber, falls der Arbeitnehmer in einen dreiwöchigen WK einrücken muss?", "options": ["11 Wochen", "8 Wochen", "7 Wochen", "5 Wochen"], "correct": [0]}, {"question": "[163] Wie lange muss ein Arbeitgeber gemäss Basler Skala den Lohn bei Krankheit bezahlen (6 Monate Anstellung, keine spezielle Versicherung)?", "options": ["2 Wochen", "3 Wochen", "4 Wochen", "8 Wochen"], "correct": [1]}, {"question": "[164] Beurteilen Sie die Aussagen zum Arbeitsrecht:", "options": ["Unbefristete Arbeitsverhältnisse haben keine Probezeit.", "Der 13. Monatslohn ist ein fester Lohnbestandteil.", "Ich kann vom Arbeitgeber jederzeit ein Arbeitszeugnis verlangen.", "Wenn die Gratifikation im Vertrag geregelt ist, habe ich bei Stellenwechsel Anspruch darauf."], "correct": [1, 2, 3]}, {"question": "[165] Beurteilen Sie die Aussagen zur Beendigung des Arbeitsvertrages:", "options": ["Arbeitnehmende können verlangen, dass die Kündigung schriftlich begründet wird.", "Kündigungen sind nach Gesetz 'formlos', also auch mündlich gültig.", "Befristete Arbeitsverträge enden ohne Kündigung nach Ablauf der abgemachten Zeit.", "Die Kündigungsfrist läuft ab dem Zeitpunkt der Mitteilung."], "correct": [0, 1, 2, 3]}, {"question": "[166] Beurteilen Sie die Aussagen zum GAV:", "options": ["Der GAV wird zwischen einem Arbeitgeberverband und einer Arbeitnehmerorganisation abgeschlossen.", "Der GAV wird zwischen einer Arbeitgeberin und einem Arbeitnehmer abgeschlossen.", "Bei GAV-Verhandlungen vertreten die Gewerkschaften die Interessen der Arbeitgeber.", "In einem GAV werden zum Beispiel Mindestlöhne festgelegt."], "correct": [0, 3]}, {"question": "[167] Beurteilen Sie die Aussagen zum Arbeitsvertrag (Ferien/Kündigung):", "options": ["Ein Jugendlicher hat bis zum 30. Altersjahr Anspruch auf eine zusätzliche unbezahlte Ferienwoche.", "Einer schwangeren Frau darf während der ganzen Schwangerschaft nicht ordentlich gekündigt werden.", "Die Probezeit dauert einen Monat, wenn im Arbeitsvertrag nichts anderes vereinbart worden ist.", "Mehrmonatige Absenzen infolge von Unfall oder Krankheit können zu Ferienkürzungen führen."], "correct": [1, 2, 3]}, {"question": "[168] Eine fristlose Entlassung ist berechtigt:", "options": ["Wenn der Arbeitnehmer im Betrieb gestohlen hat.", "Wenn dem Arbeitnehmer in letzter Zeit einige Fehler unterlaufen sind.", "Wenn der Arbeitnehmer selbstständig die Ferien um eine Woche verlängert.", "Wenn der Arbeitnehmer bereits zum zweiten Mal innerhalb eines Monats zu spät zur Arbeit erscheint."], "correct": [0, 2]}, {"question": "[169] Beurteilen Sie die Aussagen zum Arbeitsvertrag:", "options": ["Ein gültiger Arbeitsvertrag muss schriftlich abgeschlossen werden.", "Die Kündigung durch den Arbeitgeber muss immer begründet werden.", "Eine missbräuchliche Kündigung ist rechtskräftig.", "Gemäss OR ist es Sache des Arbeitgebers, seine Angestellten gegen Krankheit zu versichern."], "correct": [2]}, {"question": "[170] Eine Arbeitnehmerin erhielt am 25. April die Kündigung auf Ende Juni (2 Monate Kündigungsfrist). Sie ist vom 1.–31. Mai krank. Auf welchen Termin muss sie den Betrieb verlassen?", "options": ["31. Juli", "31. August", "30. Juni", "30. September"], "correct": [0]}, {"question": "[171] Sie arbeiten seit vier Jahren. Am 22. März kündigen Sie. Wann ist der Kündigungstermin?", "options": ["30. April", "31. Mai", "31. März", "30. Juni"], "correct": [1]}, {"question": "[172] Beurteilen Sie die Aussagen zur Invalidenversicherung (IV):", "options": ["Das Hauptziel der IV ist es, invalide Menschen wieder ins Erwerbsleben einzugliedern.", "Nach einem schweren Unfall erhält der Verunfallte sofort eine IV-Rente.", "Die IV wird nur durch Lohnprozente der Arbeitgeber finanziert.", "Die IV-Rente ersetzt den vollen letzten Lohn."], "correct": [0]}, {"question": "[173] Beurteilen Sie die Aussagen zur Erwerbsersatzordnung (EO):", "options": ["Sie deckt den Erwerbsausfall bei länger dauernder Krankheit.", "Sie gleicht die Lohndifferenz bei Änderung der Erwerbstätigkeit infolge Invalidität aus.", "Sie stellt den Lebensunterhalt nach der Pensionierung sicher.", "Sie leistet einen Anteil an den Erwerbsausfall während dem Militärdienst."], "correct": [3]}, {"question": "[174] Beurteilen Sie die Aussagen zur Arbeitslosenversicherung (ALV):", "options": ["Die ALV wird durch Arbeitgeber und Arbeitnehmer zu gleichen Teilen finanziert.", "Die ALV kürzt die Taggelder, wenn jemand selbstverschuldet arbeitslos wird.", "Die ALV zahlt den Lohn, den der Arbeitgeber wegen Zahlungsunfähigkeit nicht mehr bezahlen kann.", "Die ALV zahlt erst Taggelder, wenn sich der Arbeitnehmer beim RAV gemeldet hat."], "correct": [0, 1, 2, 3]}], videos:[] },
+  { id:12, emoji:"⚖️", color:"#80B918", title:"Selbstverantwortung", subtitle:"Mietrecht, Versicherungen & AHV", flashcards:[{"front": "Alters- und Hinterlassenenversicherung (AHV)", "back": "Sozialversicherung zur Existenzsicherung für pensionierte Personen und Hinterbliebene (Witwen und Waisen). AHV-Alter: Frau: 64 Jahre, Mann: 65 Jahre. Sie ist obligatorisch."}, {"front": "berufliche Vorsorge", "back": "Zweite Säule. Sie versichert Arbeitnehmende gegen Alter, Tod und Invalidität. Sie ist obligatorisch."}, {"front": "Bonus", "back": "Reduktion der Prämie, wenn man keine Versicherungsleistung in Anspruch genommen hat. (Siehe auch: Malus)"}, {"front": "Drei-Säulen-Prinzip", "back": "Schweizer Vorsorgesystem, das auf drei Säulen basiert und die Risiken Alter, Tod und Invalidität abdeckt. (Siehe auch: IV, AHV, private Vorsorge, berufliche Vorsorge, Pensionskasse)"}, {"front": "Erstrecken des Mietverhältnisses", "back": "Recht des Mieters, eine Verlängerung des Mietverhältnisses zu verlangen, wenn die Beendigung der Miete für ihn eine Härte zur Folge hätte (z. B. kinderreiche Familien, alleinerziehende Mütter oder Väter)."}, {"front": "Fixkosten", "back": "Kosten in einem Budget, die jeden Monat gleich hoch sind, wie z.B. Mietzins, Telefongrundgebühr, Radio, TV oder Versicherungen."}, {"front": "flexible Kosten", "back": "Kosten, die jeden Monat verschieden ausfallen (z. B. Kleider, Hobbys). (Siehe auch: Budget)"}, {"front": "Haftpflichtversicherung", "back": "Versicherung, welche den Schaden übernimmt, den ein Versicherter einer anderen Person zahlen muss."}, {"front": "Hausratversicherung", "back": "Sachversicherung (z. T. obligatorisch), die bei Wasser-, Feuer- und Glasschäden sowie bei Diebstahl zahlt."}, {"front": "Kapitalabdeckungsverfahren", "back": "Art der Finanzierung, bei der die Beiträge der Versicherten individuell auf ein Konto gutgeschrieben und beim Erreichen des Pensionsalters ausbezahlt werden."}, {"front": "Kaution", "back": "Sicherheit in Form eines Geldbetrags, die zur Deckung von ausstehenden Mietzinsen, Nebenkosten und Schadenersatzforderungen dient."}, {"front": "Malus", "back": "Erhöhung der Prämie, wenn man eine Versicherungsleistung in Anspruch genommen hat. (Siehe auch: Bonus)"}, {"front": "Mängelliste", "back": "Schriftliche Aufstellung bei einem Mietantritt, in der alle Mängel/Schäden festgehalten werden. Dient als Absicherung für den Mieter, um bei Rückgabe der Wohnung nicht für bereits vorhandene Mängel zu haften."}, {"front": "Mietvertrag", "back": "Vertrag, welcher zwischen Mieter und Vermieter abgeschlossen wird. Das Gesetz sieht für den Mietvertrag keine besondere Form vor. Er ist darum auch mündlich gültig."}, {"front": "Mietzinserhöhung", "back": "Mietvertragsänderung, welche durch den Vermieter auf einem vom Kanton bewilligten Formular rechtzeitig mitgeteilt und begründet werden muss."}, {"front": "Motorfahrzeughaftpflichtversicherung", "back": "Versicherung, die die Schäden übernimmt, welche ein Autofahrer anderen zufügt. Weil diese schnell sehr teuer werden können, ist diese Versicherung obligatorisch."}, {"front": "Pensionskasse (PK)", "back": "Berufliche Vorsorge. Arbeitgeber und Arbeitnehmer zahlen zu gleichen Teilen Beiträge ein, die von der Pensionskasse verwaltet und beim Erreichen des Rentenalters ausgezahlt werden."}, {"front": "Personenversicherung", "back": "Versicherung, die Risiken abdeckt, die eine Person selbst betreffen (z. B. Unfall, Krankheit)."}, {"front": "private Vorsorge", "back": "Dritte Säule der Altersvorsorge, welche teilweise durch steuerliche Vorteile gefördert wird (z. B. Lebensversicherung, Säule 3a und 3b). Sie ist freiwillig."}, {"front": "Privathaftpflichtversicherung", "back": "Versicherung, welche Schäden bezahlt, die ich im privaten Umfeld anderen Personen zufüge. Sie ist freiwillig, aber empfehlenswert."}, {"front": "Sachversicherung", "back": "Versicherung, die Schäden am persönlichen Eigentum abdeckt."}, {"front": "staatliche Vorsorge, AHV", "back": "Erste Säule der Altersvorsorge (AHV), welche zur Sicherung der Existenz im Alter dient."}, {"front": "Umlageverfahren", "back": "Art der Finanzierung, bei der die Beiträge der Versicherten an die heutigen Rentner und Rentnerinnen ausbezahlt werden (z. B. AHV)."}], rep:[{"question": "[179] Beurteilen Sie die Aussagen zum Mietrecht:", "options": ["Der Mietvertrag kann mündlich abgeschlossen werden.", "Eine Wohnung kann mit einer Frist von zwei Monaten auf einen ortsüblichen Termin gekündigt werden.", "Eine telefonische Kündigung der Wohnung durch den Vermieter ist rechtsgültig.", "Der Vermieter kann aus bestimmten Gründen die Untermiete verbieten."], "correct": [0, 3]}, {"question": "[180] Wo sind bei einem Streitfall zwischen Mieter und Vermieter die gesetzlichen Bestimmungen nachzuschlagen?", "options": ["Bundesverfassung", "Zivilgesetzbuch", "Obligationenrecht", "Strafgesetzbuch"], "correct": [2]}, {"question": "[181] Ein Mieter wohnt in einer 1-Zimmer-Wohnung. Am 2. Juni kündigt er. Wann ist der Kündigungstermin?", "options": ["30. Juni", "31. August", "31. Juli", "30. September"], "correct": [3]}, {"question": "[182] Wofür haftet der Mieter nicht?", "options": ["Für absichtlich verursachte Schäden.", "Für Schäden infolge unsorgfältiger Behandlung.", "Für Schäden infolge normaler Abnützung.", "Für Schäden, die beim Einzug schon vorhanden waren."], "correct": [2, 3]}, {"question": "[183] Für welchen Unterhalt kommt der Mieter auf?", "options": ["Der Spülkasten der Toilette ist undicht.", "Der Backofen heizt nicht mehr.", "Ersatz einer Glühbirne.", "Das Plastik-Salatfach des Kühlschranks hat einen Riss."], "correct": [2, 3]}, {"question": "[184] Beurteilen Sie die Aussagen zum Mietrecht:", "options": ["Die Kaution darf höchstens drei Monatsmieten betragen.", "Mieter müssen Wohnungen schriftlich kündigen.", "Ob ich ein Zimmer untervermiete, geht nur mich etwas an.", "Ist ein Teppich beim Auszug unbrauchbar, muss in jedem Fall ein neuer Teppich bezahlt werden."], "correct": [0, 1]}, {"question": "[185] Wann darf der Vermieter eine Zustimmung für die Untermiete verweigern?", "options": ["Der Mieter gibt die Bedingungen der Untermiete nicht bekannt.", "Der Mieter erzielt mit der Untervermietung einen Gewinn.", "Der Untermieter nutzt das Mietobjekt als Bandproberaum und stört die Nachbarn.", "Der Vermieter kennt die Identität des Untermieters nicht."], "correct": [0, 1, 2, 3]}, {"question": "[186] Beurteilen Sie die Aussagen zu den Versicherungen:", "options": ["Ihre Privathaftpflichtversicherung vergütet nur Schäden, die Sie an eigenen Sachen verursachen.", "Jede Privatperson ist verpflichtet, eine Privathaftpflichtversicherung abzuschliessen.", "Die Motorfahrzeughaftpflichtversicherung ist für Autohalter obligatorisch.", "Die Haftpflichtversicherung gehört zu den Personenversicherungen."], "correct": [2]}, {"question": "[187] Eine Haftpflichtversicherung deckt Schäden …", "options": ["an der eigenen Person.", "an eigenen Sachen, ohne Fremdverschulden.", "an fremden Personen und Sachen.", "nur an versicherten Personen."], "correct": [2]}, {"question": "[188] Beurteilen Sie die Aussagen zur Motorfahrzeughaftpflichtversicherung:", "options": ["Die Fahrzeughaftpflichtversicherung ist in der Schweiz obligatorisch.", "Wer unfallfrei fährt, wird bei allen Gesellschaften mit einer Prämienreduktion belohnt.", "Beim Einlösen der Nummernschilder muss die Haftpflichtversicherung nachgewiesen werden.", "Eine Versicherungsgesellschaft darf bei Grobfahrlässigkeit Geld beim Unfallverursacher zurückfordern."], "correct": [0, 1, 2, 3]}, {"question": "[189] Welche Schäden werden von der Hausratversicherung gedeckt?", "options": ["Sturmschäden am Haus.", "Alle Personen- und Sachschäden.", "Diebstahl des Fernsehers.", "Schäden durch Feuer, Wasser und Glasbruch."], "correct": [2, 3]}, {"question": "[190] Beurteilen Sie die Aussagen zur AHV:", "options": ["Die AHV gehört zur sogenannten ersten Säule.", "Alle in der Schweiz lebenden Personen zahlen Beiträge an die AHV.", "Die AHV soll im Alter das Existenzminimum decken.", "Die AHV gehört zur staatlichen Vorsorge."], "correct": [0, 2, 3]}, {"question": "[191] Beurteilen Sie die Aussagen zu den Sozialversicherungen:", "options": ["Die AHV verfolgt das Ziel, das Existenzminimum nach Erreichen des Pensionsalters zu decken.", "Die EO verfolgt das Ziel, einen Teil des Lohnausfalls bei Militärdienst zu decken.", "Die IV verfolgt das Ziel, den Erwerbsausfall bei mehrmonatiger Arbeitsunfähigkeit infolge Unfalls zu decken.", "AHV und Pensionskasse verfolgen das Ziel, die Fortsetzung des gewohnten Lebensstandards zu decken."], "correct": [0, 1, 3]}, {"question": "[192] Welche Bedeutung hat der Begriff 3. Säule?", "options": ["Die 3. Säule ist für alle Lohnbezüger obligatorisch.", "Es handelt sich um eine gebundene Vorsorge.", "Der Staat erlaubt Lohnbezügern, eine bestimmte Summe steuerfrei für die Altersvorsorge anzusparen.", "Der für die 3. Säule einbezahlte Betrag darf bei der Einkommenssteuer abgezogen werden."], "correct": [1, 2, 3]}], videos:[] },
+];
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let S = { name:'', xp:0, level:1, bestStreak:0, gamesPlayed:0, chapterProgress:{}, leaderboard:[], schwachstellen:{} };
+let G = { chapter:null, mode:null, items:[], idx:0, score:0, correct:0, streak:0, maxStreak:0, flipped:false, repSelected:new Set(), wrongItems:[] };
+
+function save() { try { localStorage.setItem('abu_v2', JSON.stringify(S)); } catch(e){} }
+function load() { try { const r=localStorage.getItem('abu_v2'); if(r) S=Object.assign(S,JSON.parse(r)); } catch(e){} }
+
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(el => {
+    el.classList.remove('active');
+    el.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = (id === 'screen-welcome') ? 'flex' : 'block';
+  requestAnimationFrame(() => el.classList.add('active'));
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════════════════════
+// WELCOME
+// ════════════════════════════════════════════
+function startApp() {
+  const inp = document.getElementById('name-input');
+  const name = inp.value.trim();
+  if (!name) { inp.classList.add('error'); inp.focus(); setTimeout(()=>inp.classList.remove('error'),900); return; }
+  S.name = name; save(); showChapters();
+}
+document.getElementById('name-input').addEventListener('keydown', e => { if(e.key==='Enter') startApp(); });
+
+// ════════════════════════════════════════════
+// CHAPTERS
+// ════════════════════════════════════════════
+function showChapters() {
+  document.getElementById('topbar-name').textContent = '👋 ' + S.name;
+  document.getElementById('s-xp').textContent = S.xp;
+  document.getElementById('s-done').textContent = Object.keys(S.chapterProgress).length;
+  document.getElementById('s-streak').textContent = S.bestStreak;
+  document.getElementById('s-games').textContent = S.gamesPlayed;
+  updateXPUI();
+  renderGrid();
+  showScreen('screen-chapters');
+}
+
+function renderGrid() {
+  const grid = document.getElementById('chapters-grid');
+  grid.innerHTML = '';
+  CHAPTERS.forEach(ch => {
+    const prog = S.chapterProgress[ch.id] || { xp:0 };
+    const total = ch.flashcards.length * 5 + ch.rep.length * 15;
+    const pct = total > 0 ? Math.min(100, Math.round((prog.xp||0)/total*100)) : 0;
+    const hasContent = ch.flashcards.length + ch.rep.length > 0;
+    const card = document.createElement('div');
+    card.className = 'ch-card';
+    card.style.setProperty('--cc', ch.color);
+    card.onclick = () => openChapter(ch.id);
+    card.innerHTML = `
+      <div class="ch-top"><span class="ch-emoji">${ch.emoji}</span><span class="ch-num">KAP. ${ch.id}</span></div>
+      <h3>${ch.title}</h3>
+      <p class="ch-desc">${hasContent ? ch.subtitle : '⏳ Inhalte folgen in Kürze'}</p>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="prog-label">${pct}% abgeschlossen${prog.xp ? ' · '+prog.xp+' XP' : ''}</div>`;
+    grid.appendChild(card);
+  });
+
+  // Globale Fehlertraining-Karte ganz oben
+  const total = totalSchwachstellen();
+  const swCard = document.createElement('div');
+  swCard.className = 'ch-card schwachstellen';
+  swCard.onclick = openGlobalFehlertraining;
+  swCard.innerHTML = `
+    <div class="ch-top"><span class="ch-emoji">💪</span><span class="ch-num">TRAINING</span></div>
+    <h3>Nochmals üben</h3>
+    ${total === 0
+      ? '<p class="sw-empty">✅ Noch keine offenen Fragen – weiter so!</p>'
+      : `<div class="sw-count">${total}</div><p class="sw-empty">offene Fragen aus allen Kapiteln</p>`}`;
+  grid.insertBefore(swCard, grid.firstChild);
+}
+
+// ════════════════════════════════════════════
+// CHAPTER DETAIL
+// ════════════════════════════════════════════
+function openChapter(id) {
+  const ch = CHAPTERS.find(c => c.id === id);
+  G.chapter = ch;
+
+  document.getElementById('det-emoji').textContent = ch.emoji;
+  document.getElementById('det-title').textContent = ch.title;
+  document.getElementById('det-sub').textContent = ch.subtitle;
+  document.getElementById('ms-f').textContent = ch.flashcards.length;
+  document.getElementById('ms-r').textContent = ch.rep.length;
+  document.getElementById('det-xp').textContent = S.xp + ' XP';
+  document.getElementById('det-lv').textContent = 'LV ' + S.level;
+  document.getElementById('ch-hero').style.setProperty('--cc', ch.color);
+
+  const prog = S.chapterProgress[ch.id];
+  document.getElementById('ms-best').textContent = prog && prog.bestScore ? prog.bestScore + ' Pkt.' : '–';
+
+  lockMode('mc-flash', ch.flashcards.length === 0);
+  lockMode('mc-rep', ch.rep.length === 0);
+  // Fehlertraining-Karte
+  const swCount = chapterSchwachstellen(ch.id).length;
+  const ftCard = document.getElementById('mc-fehler');
+  if (swCount > 0) {
+    ftCard.style.display = 'block';
+    ftCard.querySelector('.sw-ft-count').textContent = swCount + ' offene Frage' + (swCount !== 1 ? 'n' : '');
+  } else {
+    ftCard.style.display = 'none';
+  }
+
+  // Video – dynamisch injizieren
+  const placeholder = document.getElementById('det-video-placeholder');
+  if (ch.videos && ch.videos.length > 0) {
+    placeholder.innerHTML = `
+      <div class="video-section">
+        <div class="video-label">🎬 Erklärvideo</div>
+        <div class="video-container">
+          <iframe
+            src="https://www.youtube.com/embed/${ch.videos[0].youtubeId}?rel=0"
+            allowfullscreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+          </iframe>
+        </div>
+      </div>`;
+  } else {
+    placeholder.innerHTML = '';
+  }
+
+  showScreen('screen-chapter-detail');
+}
+
+function lockMode(id, locked) {
+  const el = document.getElementById(id);
+  if (locked) el.classList.add('locked'); else el.classList.remove('locked');
+}
+
+// ════════════════════════════════════════════
+// GAME INIT
+// ════════════════════════════════════════════
+function startMode(mode) {
+  const ch = G.chapter;
+  const key = mode === 'flashcard' ? 'flashcards' : 'rep';
+  const items = ch[key];
+  if (!items || items.length === 0) { toast('⏳ Inhalte folgen bald!','info'); return; }
+  G = { ...G, mode, items:shuffle([...items]), idx:0, score:0, correct:0, streak:0, maxStreak:0, flipped:false, repSelected:new Set(), wrongItems:[] };
+  document.getElementById('live-score').textContent = '0';
+  document.getElementById('streak-banner').style.display = 'none';
+  ['flashcard','rep'].forEach(m => {
+    document.getElementById('mode-'+m).style.display = m === mode ? 'block' : 'none';
+  });
+  showScreen('screen-game');
+  renderItem();
+}
+
+function renderItem() {
+  document.getElementById('g-prog').textContent = (G.idx+1) + ' / ' + G.items.length;
+  if (G.mode === 'flashcard') renderFlashcard();
+  else renderRepQuestion();
+}
+
+// ════════════════════════════════════════════
+// FLASHCARD
+// ════════════════════════════════════════════
+function renderFlashcard() {
+  const item = G.items[G.idx];
+  document.getElementById('fc-front').textContent = item.front;
+  document.getElementById('fc-back').textContent = item.back;
+  document.getElementById('fc').classList.remove('flipped');
+  G.flipped = false;
+  document.getElementById('fc-actions').style.display = 'none';
+  document.getElementById('fc-hint-text').style.display = 'block';
+}
+function flipCard() {
+  if (G.flipped) return;
+  G.flipped = true;
+  document.getElementById('fc').classList.add('flipped');
+  setTimeout(() => {
+    document.getElementById('fc-actions').style.display = 'flex';
+    document.getElementById('fc-hint-text').style.display = 'none';
+  }, 320);
+}
+function markCard(known) {
+  if (known) {
+    G.score+=5; G.correct++; updateStreak(true); toast('✓ Gewusst! +5 Punkte','ok');
+    removeSchwachstelle(G.items[G.idx], G.mode);
+  }
+  else {
+    G.wrongItems.push(G.items[G.idx]);
+    addSchwachstelle(G.items[G.idx], G.mode);
+    updateStreak(false); toast('💪 Weiter üben!','bad');
+  }
+  document.getElementById('live-score').textContent = G.score;
+  nextItem();
+}
+
+// ════════════════════════════════════════════
+// REPETITORIUM
+// ════════════════════════════════════════════
+function renderRepQuestion() {
+  const item = G.items[G.idx];
+  document.getElementById('rep-q-text').textContent = item.question;
+  const container = document.getElementById('rep-opts');
+  container.innerHTML = '';
+  G.repSelected = new Set();
+  item.options.forEach((opt,i) => {
+    const div = document.createElement('div');
+    div.className = 'rep-opt';
+    div.innerHTML = `<div class="rep-checkbox" id="rcb-${i}"></div><div class="rep-opt-text">${opt}</div>`;
+    div.onclick = () => toggleRepOpt(div, i);
+    container.appendChild(div);
+  });
+  const btn = document.getElementById('rep-submit-btn');
+  btn.disabled = false;
+  btn.textContent = 'Antwort prüfen ✓';
+  btn.onclick = submitRep;
+}
+function toggleRepOpt(div, i) {
+  if (div.classList.contains('correct-answer') || div.classList.contains('wrong-answer')) return;
+  const cb = document.getElementById('rcb-'+i);
+  if (G.repSelected.has(i)) { G.repSelected.delete(i); div.classList.remove('selected'); cb.textContent=''; }
+  else { G.repSelected.add(i); div.classList.add('selected'); cb.textContent='✓'; }
+}
+function submitRep() {
+  const item = G.items[G.idx];
+  const correctSet = new Set(item.correct);
+  document.getElementById('rep-submit-btn').disabled = true;
+  let fullyCorrect = true;
+  document.querySelectorAll('.rep-opt').forEach((div,i) => {
+    const isCorrect = correctSet.has(i), isSelected = G.repSelected.has(i);
+    div.classList.remove('selected');
+    const cb = document.getElementById('rcb-'+i);
+    if (isCorrect && isSelected) { div.classList.add('correct-answer'); cb.textContent='✓'; }
+    else if (!isCorrect && isSelected) { div.classList.add('wrong-answer'); cb.textContent='✗'; fullyCorrect=false; }
+    else if (isCorrect && !isSelected) { div.classList.add('missed'); cb.textContent='!'; fullyCorrect=false; }
+  });
+  const hasAnyRight = [...G.repSelected].some(i => correctSet.has(i));
+  if (fullyCorrect && G.repSelected.size === correctSet.size) {
+    G.score+=15; G.correct++; updateStreak(true); removeSchwachstelle(G.items[G.idx], G.mode); toast('🎯 Perfekt! +15 Punkte','ok');
+  } else if (hasAnyRight) {
+    G.wrongItems.push(G.items[G.idx]); addSchwachstelle(G.items[G.idx], G.mode); G.score+=5; updateStreak(false); toast('🤔 Teilweise richtig! +5 Punkte','info');
+  } else {
+    G.wrongItems.push(G.items[G.idx]); addSchwachstelle(G.items[G.idx], G.mode); updateStreak(false); toast('✗ Leider falsch!','bad');
+  }
+  document.getElementById('live-score').textContent = G.score;
+  const btn = document.getElementById('rep-submit-btn');
+  btn.textContent = 'Weiter →';
+  btn.disabled = false;
+  btn.onclick = () => { btn.onclick = submitRep; nextItem(); };
+}
+
+function nextItem() {
+  G.idx++;
+  if (G.idx >= G.items.length) { setTimeout(showResults,300); return; }
+  setTimeout(renderItem, 200);
+}
+
+// ════════════════════════════════════════════
+// STREAK
+// ════════════════════════════════════════════
+function updateStreak(ok) {
+  if (ok) { G.streak++; G.maxStreak=Math.max(G.maxStreak,G.streak); }
+  else { G.streak=0; }
+  const banner = document.getElementById('streak-banner');
+  if (G.streak >= 3) { banner.style.display='flex'; document.getElementById('streak-num').textContent=G.streak; }
+  else { banner.style.display='none'; }
+}
+
+// ════════════════════════════════════════════
+// RESULTS
+// ════════════════════════════════════════════
+function showResults() {
+  const { score,correct,maxStreak,items,chapter,mode } = G;
+  const total = items.length;
+  const pct = total > 0 ? Math.round(correct/total*100) : 0;
+  S.xp += score;
+  S.bestStreak = Math.max(S.bestStreak, maxStreak);
+  S.level = Math.floor(S.xp/100)+1;
+  S.gamesPlayed++;
+  if (!S.chapterProgress[chapter.id]) S.chapterProgress[chapter.id]={xp:0};
+  S.chapterProgress[chapter.id].xp = (S.chapterProgress[chapter.id].xp||0)+score;
+  if (score > (S.chapterProgress[chapter.id].bestScore||0)) S.chapterProgress[chapter.id].bestScore=score;
+  S.leaderboard.push({ name:S.name, score, pct, chapter:chapter.title,
+    mode:mode==='flashcard'?'🃏 Lernkarten':'🎓 Repetitorium',
+    date:new Date().toLocaleDateString('de-CH') });
+  S.leaderboard.sort((a,b)=>b.score-a.score);
+  S.leaderboard=S.leaderboard.slice(0,30);
+  save();
+  let emoji='💪',title='Nicht aufgeben!';
+  if(pct>=90){emoji='🏆';title='Ausgezeichnet!';}
+  else if(pct>=75){emoji='🎉';title='Super gemacht!';}
+  else if(pct>=55){emoji='👍';title='Gut gemacht!';}
+  else if(pct>=35){emoji='😊';title='Weiter so!';}
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-sub').textContent=pct+'% richtig · +'+score+' XP · '+chapter.title;
+  document.getElementById('rn-score').textContent=score;
+  document.getElementById('rn-correct').textContent=correct+'/'+total;
+  document.getElementById('rn-streak').textContent=maxStreak;
+  document.getElementById('res-lv').textContent='LV '+S.level;
+
+  showScreen('screen-results');
+}
+function playAgain() { startMode(G.mode); }
+
+// ════════════════════════════════════════════
+// FEHLERTRAINING (per Kapitel)
+// ════════════════════════════════════════════
+function itemKey(item, mode) {
+  return mode + '::' + (item.front || item.question || '').substring(0, 80);
+}
+function addSchwachstelle(item, mode) {
+  const chId = G.chapter.id;
+  if (!S.schwachstellen[chId]) S.schwachstellen[chId] = [];
+  const key = itemKey(item, mode);
+  if (!S.schwachstellen[chId].find(s => s.key === key)) {
+    S.schwachstellen[chId].push({ key, item, mode });
+    save();
+  }
+}
+function removeSchwachstelle(item, mode) {
+  const chId = G.chapter.id;
+  if (!S.schwachstellen[chId]) return;
+  const key = itemKey(item, mode);
+  S.schwachstellen[chId] = S.schwachstellen[chId].filter(s => s.key !== key);
+  save();
+}
+function totalSchwachstellen() {
+  return Object.values(S.schwachstellen).reduce((n, arr) => n + arr.length, 0);
+}
+function chapterSchwachstellen(chId) {
+  return S.schwachstellen[chId] || [];
+}
+function startFehlertraining(chId) {
+  const sw = chapterSchwachstellen(chId);
+  if (sw.length === 0) { toast('🎉 Keine offenen Fragen!', 'ok'); return; }
+  const flashItems = sw.filter(s => s.mode === 'flashcard').map(s => s.item);
+  const repItems   = sw.filter(s => s.mode === 'rep').map(s => s.item);
+  // prefer the mode with more wrong items
+  const mode = repItems.length >= flashItems.length ? 'rep' : 'flashcard';
+  const items = mode === 'rep' ? repItems : flashItems;
+  G = { ...G, mode, items: shuffle([...items]), idx:0, score:0, correct:0, streak:0, maxStreak:0, flipped:false, repSelected:new Set(), wrongItems:[] };
+  document.getElementById('live-score').textContent = '0';
+  document.getElementById('streak-banner').style.display = 'none';
+  ['flashcard','rep'].forEach(m => {
+    document.getElementById('mode-'+m).style.display = m === mode ? 'block' : 'none';
+  });
+  showScreen('screen-game');
+  renderItem();
+}
+function openGlobalFehlertraining() {
+  const all = Object.entries(S.schwachstellen).flatMap(([chId, arr]) => arr);
+  if (all.length === 0) { toast('🎉 Keine offenen Fragen – super!', 'ok'); return; }
+  const flashItems = all.filter(s => s.mode === 'flashcard').map(s => s.item);
+  const repItems   = all.filter(s => s.mode === 'rep').map(s => s.item);
+  document.getElementById('det-video-placeholder').innerHTML = '';
+  document.getElementById('det-emoji').textContent = '💪';
+  document.getElementById('det-title').textContent = 'Nochmals üben';
+  document.getElementById('det-sub').textContent = 'Falsch beantwortete Fragen aus allen Kapiteln';
+  document.getElementById('ms-f').textContent = flashItems.length;
+  document.getElementById('ms-r').textContent = repItems.length;
+  document.getElementById('ms-best').textContent = '–';
+  document.getElementById('det-xp').textContent = S.xp + ' XP';
+  document.getElementById('det-lv').textContent = 'LV ' + S.level;
+  document.getElementById('ch-hero').style.setProperty('--cc', '#f97316');
+  lockMode('mc-flash', flashItems.length === 0);
+  lockMode('mc-rep', repItems.length === 0);
+  G.chapter = { id:'global-sw', emoji:'💪', color:'#f97316', title:'Nochmals üben',
+    subtitle:'Fehlertraining', flashcards:flashItems, rep:repItems, videos:[] };
+  showScreen('screen-chapter-detail');
+}
+
+// ════════════════════════════════════════════
+// RETRY WRONG
+// ════════════════════════════════════════════
+function retryWrongFromResults() {
+  const items = [...G.wrongItems];
+  if (items.length === 0) return;
+  const mode = G.mode;
+  G = { ...G, mode, items: shuffle(items), idx:0, score:0, correct:0, streak:0, maxStreak:0, flipped:false, repSelected:new Set(), wrongItems:[] };
+  document.getElementById('live-score').textContent = '0';
+  document.getElementById('streak-banner').style.display = 'none';
+  ['flashcard','rep'].forEach(m => {
+    document.getElementById('mode-'+m).style.display = m === mode ? 'block' : 'none';
+  });
+  showScreen('screen-game');
+  renderItem();
+}
+function retryWrong() {
+  const wrongItems = [...G.wrongItems];
+  if (wrongItems.length === 0) return;
+  const mode = G.mode;
+  G = { ...G, mode, items:shuffle(wrongItems), idx:0, score:0, correct:0, streak:0, maxStreak:0, flipped:false, repSelected:new Set(), wrongItems:[] };
+  document.getElementById('live-score').textContent = '0';
+  document.getElementById('streak-banner').style.display = 'none';
+  ['flashcard','rep'].forEach(m => {
+    document.getElementById('mode-'+m).style.display = m === mode ? 'block' : 'none';
+  });
+  showScreen('screen-game');
+  renderItem();
+}
+
+// ════════════════════════════════════════════
+// LEADERBOARD
+// ════════════════════════════════════════════
+function showLeaderboard() {
+  const list = document.getElementById('lb-list');
+  if (S.leaderboard.length===0) {
+    list.innerHTML=`<div class="empty"><div class="ei">🏆</div><p>Noch keine Einträge.<br>Spiele ein Quiz, um auf die Rangliste zu kommen!</p></div>`;
+  } else {
+    list.innerHTML='';
+    S.leaderboard.forEach((e,i)=>{
+      const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+      const rs=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+      const div=document.createElement('div');
+      div.className='lb-entry';
+      div.innerHTML=`<div class="lb-rank ${rc}">${rs}</div><div class="lb-info"><div class="lb-name">${e.name}</div><div class="lb-detail">${e.chapter} · ${e.mode} · ${e.pct}% richtig · ${e.date}</div></div><div class="lb-pts">${e.score} Pkt.</div>`;
+      list.appendChild(div);
+    });
+  }
+  showScreen('screen-leaderboard');
+}
+
+// ════════════════════════════════════════════
+// XP UI
+// ════════════════════════════════════════════
+function updateXPUI() {
+  const inLevel = S.xp % 100;
+  document.getElementById('xp-fill').style.width = inLevel+'%';
+  document.getElementById('xp-num').textContent = S.xp+' XP';
+  document.getElementById('lv-badge').textContent = 'LV '+S.level;
+}
+
+// ════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════
+let _t;
+function toast(msg,type) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='show '+type;
+  clearTimeout(_t); _t=setTimeout(()=>el.classList.remove('show'),1700);
+}
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function shuffle(arr) {
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function confirmQuit() {
+  if(confirm('Spiel wirklich abbrechen?')) openChapter(G.chapter.id);
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+load();
+if (S.name) document.getElementById('name-input').value = S.name;
+</script>
+</body>
+</html>
